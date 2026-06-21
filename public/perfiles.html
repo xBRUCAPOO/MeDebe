@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <title>Perfiles — MeDebe</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- Canvas de partículas animadas de fondo -->
+  <canvas id="particles-canvas" aria-hidden="true"></canvas>
+
+  <div class="app-shell">
+
+    <!-- Header: botón volver + buscador -->
+    <header class="app-header app-header--sub perfiles-header">
+      <button class="btn-back"
+              onclick="window.location.href='index.html'"
+              aria-label="Volver al inicio">
+        <span class="material-symbols-outlined">arrow_back_ios</span>
+      </button>
+
+      <div class="perfiles-search-wrapper">
+        <span class="material-symbols-outlined perfiles-search-icon">search</span>
+        <input
+          type="text"
+          id="perfiles-search"
+          class="perfiles-search-input"
+          placeholder="Buscar perfil…"
+          autocomplete="off"
+        />
+      </div>
+    </header>
+
+    <main class="perfiles-main">
+
+      <!-- Botón a Control Académico -->
+      <button class="btn-academico" id="btn-academico" onclick="window.location.href='index.html'">
+        <span class="material-symbols-outlined btn-academico-icon">school</span>
+        <div class="btn-academico-text">
+          <span class="btn-academico-title">Control académico</span>
+          <span class="btn-academico-sub">Sistema de notas y recompensas</span>
+        </div>
+        <span class="material-symbols-outlined btn-academico-arrow">chevron_right</span>
+      </button>
+
+      <!-- Separador -->
+      <div class="section-divider" aria-hidden="true"></div>
+
+      <!-- Barra de filtros: todos / MeDebe / LeDebo / Neutro -->
+      <div class="filter-bar" id="perfiles-filter-bar">
+        <button class="filter-btn filter-btn--active" data-filter="todos">Todos</button>
+        <button class="filter-btn" data-filter="medebe">
+          <span class="material-symbols-outlined">arrow_circle_down</span>MeDebe
+        </button>
+        <button class="filter-btn" data-filter="ledebo">
+          <span class="material-symbols-outlined">arrow_circle_up</span>LeDebo
+        </button>
+        <button class="filter-btn" data-filter="neutro">
+          <span class="material-symbols-outlined">remove_circle</span>Neutro
+        </button>
+      </div>
+
+      <!-- Estado de carga -->
+      <div class="hist-loading" id="perfiles-loading">
+        <div class="loading-spinner">
+          <div class="spinner-ring"></div>
+        </div>
+        <p>Cargando perfiles…</p>
+      </div>
+
+      <!-- Estado vacío -->
+      <div class="hist-empty" id="perfiles-empty" hidden>
+        <span class="material-symbols-outlined hist-empty-icon">group_add</span>
+        <p class="hist-empty-title">Todavía no agregaste perfiles</p>
+        <p class="hist-empty-sub">Creá tu primer perfil para empezar a registrar deudas.</p>
+      </div>
+
+      <!-- Sin resultados de búsqueda/filtro -->
+      <div class="hist-empty" id="perfiles-no-results" hidden>
+        <span class="material-symbols-outlined hist-empty-icon">search_off</span>
+        <p class="hist-empty-title">Sin resultados</p>
+        <p class="hist-empty-sub">No encontramos perfiles que coincidan.</p>
+      </div>
+
+      <!-- Lista de perfiles -->
+      <ul class="movimientos-list perfiles-list" id="perfiles-list" aria-label="Lista de perfiles"></ul>
+
+    </main>
+
+    <!-- Botón flotante para añadir un nuevo perfil -->
+    <button class="fab-add" id="btn-add-perfil" aria-label="Añadir perfil">
+      <span class="material-symbols-outlined">person_add</span>
+    </button>
+
+  </div>
+
+  <!-- Modal: descripción del perfil -->
+  <div class="modal-overlay" id="perfil-info-overlay" hidden>
+    <div class="modal modal--info" role="dialog" aria-modal="true" aria-labelledby="perfil-info-title">
+      <span class="material-symbols-outlined modal-person-icon" id="perfil-info-icon">person</span>
+      <h2 class="modal-title" id="perfil-info-title">—</h2>
+      <p class="modal-body" id="perfil-info-desc">—</p>
+      <div class="modal-actions">
+        <button class="btn btn--ghost" id="perfil-info-close">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: añadir nuevo perfil -->
+  <div class="modal-overlay" id="perfil-add-overlay" hidden>
+    <div class="modal modal--form" role="dialog" aria-modal="true" aria-labelledby="perfil-add-title">
+      <span class="material-symbols-outlined modal-person-icon">person_add</span>
+      <h2 class="modal-title" id="perfil-add-title">Nuevo perfil</h2>
+
+      <form id="form-add-perfil" class="modal-form" novalidate>
+        <div class="field-group">
+          <label class="field-label" for="input-perfil-nombre">
+            <span class="material-symbols-outlined">badge</span>
+            Nombre
+            <span class="required-mark" aria-hidden="true">*</span>
+          </label>
+          <input
+            type="text"
+            id="input-perfil-nombre"
+            class="field-input"
+            placeholder="Ej: Juan Pérez"
+            maxlength="60"
+            autocomplete="off"
+            required
+          />
+          <span class="field-error" id="error-perfil-nombre"></span>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="input-perfil-desc">
+            <span class="material-symbols-outlined">notes</span>
+            Descripción
+            <span class="field-optional">(opcional)</span>
+          </label>
+          <textarea
+            id="input-perfil-desc"
+            class="field-input field-textarea"
+            placeholder="Notas sobre este perfil…"
+            maxlength="200"
+            rows="3"
+          ></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn--ghost" id="perfil-add-cancel">Cancelar</button>
+          <button type="submit" class="btn btn--accent" id="perfil-add-submit">
+            <span class="material-symbols-outlined">check</span>
+            Crear
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: confirmación de eliminación de perfil -->
+  <div class="modal-overlay" id="perfil-delete-overlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="perfil-delete-title">
+      <span class="material-symbols-outlined modal-warn-icon modal-warn-icon--danger">delete</span>
+      <h2 class="modal-title" id="perfil-delete-title">¿Eliminar este perfil?</h2>
+      <p class="modal-body" id="perfil-delete-body">Esta acción no se puede deshacer. Se eliminará todo el historial asociado.</p>
+      <div class="modal-actions">
+        <button class="btn btn--ghost" id="perfil-delete-cancel">Cancelar</button>
+        <button class="btn btn--danger" id="perfil-delete-confirm">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast de notificaciones -->
+  <div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+  <script src="js/perfiles.js"></script>
+
+</body>
+</html>

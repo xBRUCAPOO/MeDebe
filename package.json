@@ -1,0 +1,13 @@
+{
+  "name": "medebe",
+  "version": "1.0.0",
+  "description": "MeDebe — Sistema de recompensas académicas (Cloudflare Pages + D1 + R2)",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler pages dev public --d1=medebe_db --r2=MEDEBE_IMAGENES",
+    "deploy": "wrangler pages deploy public"
+  },
+  "devDependencies": {
+    "wrangler": "^3.78.0"
+  }
+}

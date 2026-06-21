@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <title>Historial del perfil — MeDebe</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <canvas id="particles-canvas" aria-hidden="true"></canvas>
+
+  <div class="app-shell">
+
+    <header class="app-header app-header--sub">
+      <button class="btn-back"
+              onclick="window.location.href='perfil.html' + window.location.search"
+              aria-label="Volver al perfil">
+        <span class="material-symbols-outlined">arrow_back_ios</span>
+      </button>
+      <div class="header-titles">
+        <h1 class="app-title app-title--sm">Historial</h1>
+        <p class="app-subtitle" id="perfil-nombre-sub">Movimientos del perfil</p>
+      </div>
+      <span class="material-symbols-outlined header-icon-right">history</span>
+    </header>
+
+    <div class="filter-bar">
+      <button class="filter-btn filter-btn--active" data-filter="todos" id="filter-todos">Todos</button>
+      <button class="filter-btn" data-filter="cargo" id="filter-cargos">
+        <span class="material-symbols-outlined">trending_up</span>Deudas
+      </button>
+      <button class="filter-btn" data-filter="pago" id="filter-pagos">
+        <span class="material-symbols-outlined">trending_down</span>Pagos
+      </button>
+    </div>
+
+    <main class="historial-container" id="historial-container">
+
+      <div class="hist-loading" id="hist-loading">
+        <div class="loading-spinner">
+          <div class="spinner-ring"></div>
+        </div>
+        <p>Cargando historial…</p>
+      </div>
+
+      <div class="hist-empty" id="hist-empty" hidden>
+        <span class="material-symbols-outlined hist-empty-icon">inbox</span>
+        <p class="hist-empty-title">Sin movimientos aún</p>
+        <p class="hist-empty-sub">Registrá el primer movimiento de este perfil.</p>
+        <button class="btn btn--accent" onclick="window.location.href='perfil-ingreso.html' + window.location.search">
+          <span class="material-symbols-outlined">add</span>
+          Añadir deuda
+        </button>
+      </div>
+
+      <ul class="movimientos-list" id="movimientos-list" aria-label="Lista de movimientos del perfil"></ul>
+
+    </main>
+
+  </div>
+
+  <!-- Modal flotante de detalle de movimiento -->
+  <div class="modal-overlay" id="mov-detail-overlay" hidden>
+    <div class="modal modal--detail" role="dialog" aria-modal="true" aria-labelledby="mov-detail-title">
+      <span class="material-symbols-outlined modal-person-icon" id="mov-detail-icon">subject</span>
+      <h2 class="modal-title" id="mov-detail-title">—</h2>
+
+      <div class="mov-detail-balance" id="mov-detail-balance"></div>
+
+      <p class="mov-detail-date" id="mov-detail-date"></p>
+
+      <p class="modal-body mov-detail-desc" id="mov-detail-desc" hidden></p>
+
+      <img class="mov-detail-img" id="mov-detail-img" src="" alt="Imagen del movimiento" hidden />
+
+      <div class="modal-actions">
+        <button class="btn btn--ghost" id="mov-detail-close">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: confirmación de eliminación de movimiento -->
+  <div class="modal-overlay" id="mov-delete-overlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mov-delete-title">
+      <span class="material-symbols-outlined modal-warn-icon modal-warn-icon--danger">delete</span>
+      <h2 class="modal-title" id="mov-delete-title">¿Eliminar este movimiento?</h2>
+      <p class="modal-body">El cambio que generó se revertirá del saldo del perfil. Esta acción no se puede deshacer.</p>
+      <div class="modal-actions">
+        <button class="btn btn--ghost" id="mov-delete-cancel">Cancelar</button>
+        <button class="btn btn--danger" id="mov-delete-confirm">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de imagen ampliada -->
+  <div class="img-modal-overlay" id="img-modal-overlay" hidden
+       role="dialog" aria-modal="true" aria-label="Imagen ampliada">
+    <button class="img-modal-close" id="img-modal-close" aria-label="Cerrar imagen">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+    <img class="img-modal-img" id="img-modal-img" src="" alt="Imagen ampliada" />
+  </div>
+
+  <div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+  <script src="js/perfil-historial.js"></script>
+
+</body>
+</html>

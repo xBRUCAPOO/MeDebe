@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <!-- Título actualizado: MeDebe en lugar de Recompensas -->
+  <title>Ingresar Nota — MeDebe</title>
+
+  <!-- Google Fonts compartidos con el resto de la app -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0&display=swap" rel="stylesheet" />
+
+  <!-- CSS externo — en el mismo nivel que este archivo (public/css/) -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- Canvas de partículas animadas de fondo -->
+  <canvas id="particles-canvas" aria-hidden="true"></canvas>
+
+  <div class="app-shell">
+
+    <!-- Header con botón de regreso — apunta a ../index.html (sube desde public/) -->
+    <header class="app-header app-header--sub">
+      <button class="btn-back"
+              onclick="window.location.href='index.html'"
+              aria-label="Volver al inicio">
+        <span class="material-symbols-outlined">arrow_back_ios</span>
+      </button>
+      <div class="header-titles">
+        <h1 class="app-title app-title--sm">Ingresar nota</h1>
+        <!-- Subtítulo actualizado: MeDebe en lugar de "recompensa académica" -->
+        <p class="app-subtitle">Nueva recompensa</p>
+      </div>
+      <span class="material-symbols-outlined header-icon-right">emoji_events</span>
+    </header>
+
+    <!-- Preview del monto que se va a ganar según la nota seleccionada -->
+    <div class="reward-preview" id="reward-preview">
+      <span class="material-symbols-outlined reward-preview-icon">payments</span>
+      <div class="reward-preview-text">
+        <span class="reward-preview-label">Recompensa estimada</span>
+        <span class="reward-preview-amount" id="preview-amount">—</span>
+      </div>
+    </div>
+
+    <!-- Formulario principal de ingreso -->
+    <main class="form-container">
+      <form id="form-ingreso" novalidate>
+
+        <!-- Campo obligatorio: nombre de la materia -->
+        <div class="field-group" id="group-materia">
+          <label class="field-label" for="input-materia">
+            <span class="material-symbols-outlined">menu_book</span>
+            Materia
+            <span class="required-mark" aria-hidden="true">*</span>
+          </label>
+          <input
+            type="text"
+            id="input-materia"
+            class="field-input"
+            placeholder="Ej: Matemáticas, Historia…"
+            maxlength="80"
+            autocomplete="off"
+            required
+          />
+          <span class="field-error" id="error-materia"></span>
+        </div>
+
+        <!-- Campo obligatorio: nota obtenida (botones 8 / 9 / 10) -->
+        <div class="field-group" id="group-nota">
+          <label class="field-label">
+            <span class="material-symbols-outlined">grade</span>
+            Nota obtenida
+            <span class="required-mark" aria-hidden="true">*</span>
+          </label>
+          <!-- Botones en lugar de input numérico: más ergonómico en mobile -->
+          <div class="nota-selector" role="group" aria-label="Seleccionar nota">
+            <button type="button" class="nota-btn" data-nota="8" aria-pressed="false">
+              <span class="nota-num">8</span>
+              <span class="nota-reward">$2.500</span>
+            </button>
+            <button type="button" class="nota-btn" data-nota="9" aria-pressed="false">
+              <span class="nota-num">9</span>
+              <span class="nota-reward">$2.500</span>
+            </button>
+            <button type="button" class="nota-btn nota-btn--gold" data-nota="10" aria-pressed="false">
+              <span class="nota-num">10</span>
+              <span class="nota-reward">$10.000</span>
+            </button>
+          </div>
+          <!-- Input oculto que almacena la nota seleccionada para el submit -->
+          <input type="hidden" id="input-nota" name="nota" required />
+          <span class="field-error" id="error-nota"></span>
+        </div>
+
+        <!-- Campo opcional: imagen de respaldo (foto del examen o boletín) -->
+        <div class="field-group">
+          <label class="field-label" for="input-imagen">
+            <span class="material-symbols-outlined">photo_camera</span>
+            Imagen de respaldo
+            <span class="field-optional">(opcional)</span>
+          </label>
+
+          <!-- Zona de carga con preview: el input file real está oculto -->
+          <div class="image-upload-zone" id="image-upload-zone">
+            <input
+              type="file"
+              id="input-imagen"
+              accept="image/*"
+              capture="environment"
+              class="file-input-hidden"
+              aria-describedby="image-hint"
+            />
+            <!-- Input alternativo: sin "capture", abre el selector de galería/archivos.
+                 Sirve de respaldo cuando la cámara falla por falta de espacio. -->
+            <input
+              type="file"
+              id="input-imagen-galeria"
+              accept="image/*"
+              class="file-input-hidden"
+              tabindex="-1"
+            />
+            <!-- Placeholder: se muestra cuando no hay imagen cargada -->
+            <div class="upload-placeholder" id="upload-placeholder">
+              <span class="material-symbols-outlined upload-icon">add_photo_alternate</span>
+              <p class="upload-text">Tocá para adjuntar una foto</p>
+              <p class="upload-hint" id="image-hint">Cámara o galería · máx. 700KB</p>
+              <button type="button" class="link-btn" id="btn-elegir-galeria">
+                ¿Falla la cámara? Elegir desde galería
+              </button>
+            </div>
+            <!-- Preview: se muestra cuando el usuario selecciona una imagen -->
+            <div class="upload-preview" id="upload-preview" hidden>
+              <img id="preview-img" src="" alt="Vista previa de la imagen adjunta" class="preview-img" />
+              <button type="button" class="remove-img-btn" id="remove-img-btn" aria-label="Quitar imagen">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón de confirmación del ingreso -->
+        <button type="submit" class="btn btn--accent btn--full btn--lg" id="btn-submit">
+          <span class="material-symbols-outlined">check_circle</span>
+          Confirmar ingreso
+        </button>
+
+      </form>
+    </main>
+
+  </div>
+
+  <!-- Toast de notificaciones -->
+  <div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+  <!-- JS del formulario de ingreso — mismo directorio que este HTML -->
+  <script src="js/ingreso.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,15 @@
+# ============================================================
+# wrangler.toml — Configuración de Cloudflare Pages para MeDebe
+# ============================================================
+
+name = "medebe"
+compatibility_date = "2024-09-23"
+pages_build_output_dir = "public"
+
+# ── Base de datos D1 (datos: saldo, movimientos e imágenes en base64) ──────
+# El "binding" es el nombre con el que los Workers acceden a la BD:
+#   context.env.medebe_db
+[[d1_databases]]
+binding       = "medebe_db"
+database_name = "medebe-db"
+database_id   = "b4057221-09d3-4502-aea8-114332d14e7d"

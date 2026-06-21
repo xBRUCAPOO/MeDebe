@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <!-- Título actualizado: MeDebe en lugar de Recompensas -->
+  <title>Retirar dinero — MeDebe</title>
+
+  <!-- Google Fonts compartidos con el resto de la app -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0&display=swap" rel="stylesheet" />
+
+  <!-- CSS externo — en el mismo nivel que este archivo (public/css/) -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- Canvas de partículas animadas de fondo -->
+  <canvas id="particles-canvas" aria-hidden="true"></canvas>
+
+  <div class="app-shell">
+
+    <!-- Header con botón de regreso — apunta a ../index.html (sube desde public/) -->
+    <header class="app-header app-header--sub">
+      <button class="btn-back"
+              onclick="window.location.href='index.html'"
+              aria-label="Volver al inicio">
+        <span class="material-symbols-outlined">arrow_back_ios</span>
+      </button>
+      <div class="header-titles">
+        <h1 class="app-title app-title--sm">Retirar dinero</h1>
+        <p class="app-subtitle">Registrar un cobro</p>
+      </div>
+      <span class="material-symbols-outlined header-icon-right">payments</span>
+    </header>
+
+    <!-- Muestra el saldo actual como referencia antes de retirar -->
+    <div class="current-balance-display" id="current-balance-display">
+      <span class="material-symbols-outlined cbt-icon">account_balance_wallet</span>
+      <div>
+        <span class="cbt-label">Saldo actual</span>
+        <span class="cbt-amount" id="saldo-actual">Cargando…</span>
+      </div>
+    </div>
+
+    <!-- Formulario de retiro -->
+    <main class="form-container">
+      <form id="form-retiro" novalidate>
+
+        <!-- Campo obligatorio: monto a descontar del saldo -->
+        <div class="field-group" id="group-monto">
+          <label class="field-label" for="input-monto">
+            <span class="material-symbols-outlined">attach_money</span>
+            Monto a retirar (ARS)
+            <span class="required-mark" aria-hidden="true">*</span>
+          </label>
+          <div class="money-input-wrapper">
+            <span class="money-prefix" aria-hidden="true">$</span>
+            <input
+              type="number"
+              id="input-monto"
+              class="field-input field-input--money"
+              placeholder="0"
+              min="1"
+              step="1"
+              inputmode="numeric"
+              required
+            />
+          </div>
+          <span class="field-error" id="error-monto"></span>
+        </div>
+
+        <!-- Atajos de montos frecuentes para agilizar el ingreso -->
+        <div class="quick-amounts">
+          <p class="quick-label">Montos rápidos</p>
+          <div class="quick-grid">
+            <button type="button" class="quick-btn" data-amount="2500">$2.500</button>
+            <button type="button" class="quick-btn" data-amount="5000">$5.000</button>
+            <button type="button" class="quick-btn" data-amount="10000">$10.000</button>
+            <!-- "Todo" rellena el input con el saldo completo disponible -->
+            <button type="button" class="quick-btn" id="btn-todo" data-amount="all">Todo</button>
+          </div>
+        </div>
+
+        <!-- Botón para confirmar el retiro -->
+        <button type="submit" class="btn btn--primary btn--full btn--lg" id="btn-submit-retiro">
+          <span class="material-symbols-outlined">arrow_upward</span>
+          Confirmar retiro
+        </button>
+
+      </form>
+    </main>
+
+  </div>
+
+  <!-- Toast de notificaciones -->
+  <div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+  <!-- Modal de advertencia cuando el retiro deja el saldo en negativo -->
+  <div class="modal-overlay" id="modal-overlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <span class="material-symbols-outlined modal-warn-icon">warning</span>
+      <h2 class="modal-title" id="modal-title">¿Continuar con saldo negativo?</h2>
+      <p class="modal-body" id="modal-body"></p>
+      <div class="modal-actions">
+        <button class="btn btn--ghost" id="modal-cancel">Cancelar</button>
+        <button class="btn btn--danger" id="modal-confirm">Confirmar igual</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS del formulario de retiro — mismo directorio que este HTML -->
+  <script src="js/retiro.js"></script>
+
+</body>
+</html>

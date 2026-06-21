@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <title>Registrar pago — MeDebe</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <canvas id="particles-canvas" aria-hidden="true"></canvas>
+
+  <div class="app-shell">
+
+    <header class="app-header app-header--sub">
+      <button class="btn-back"
+              onclick="window.location.href='perfil.html' + window.location.search"
+              aria-label="Volver al perfil">
+        <span class="material-symbols-outlined">arrow_back_ios</span>
+      </button>
+      <div class="header-titles">
+        <h1 class="app-title app-title--sm">Registrar pago</h1>
+        <p class="app-subtitle" id="perfil-nombre-sub">Nuevo movimiento</p>
+      </div>
+      <span class="material-symbols-outlined header-icon-right">payments</span>
+    </header>
+
+    <div class="current-balance-display" id="current-balance-display">
+      <span class="material-symbols-outlined cbt-icon">account_balance_wallet</span>
+      <div>
+        <span class="cbt-label">Saldo actual del perfil</span>
+        <span class="cbt-amount" id="saldo-actual">Cargando…</span>
+      </div>
+    </div>
+
+    <main class="form-container">
+      <form id="form-pago" novalidate>
+
+        <!-- Asunto -->
+        <div class="field-group" id="group-asunto">
+          <label class="field-label" for="input-asunto">
+            <span class="material-symbols-outlined">subject</span>
+            Asunto
+            <span class="required-mark" aria-hidden="true">*</span>
+          </label>
+          <input
+            type="text"
+            id="input-asunto"
+            class="field-input"
+            placeholder="Ej: Pago parcial, devolución…"
+            maxlength="80"
+            autocomplete="off"
+            required
+          />
+          <span class="field-error" id="error-asunto"></span>
+        </div>
+
+        <!-- Monto -->
+        <div class="field-group" id="group-monto">
+          <label class="field-label" for="input-monto">
+            <span class="material-symbols-outlined">attach_money</span>
+            Monto a registrar (ARS)
+            <span class="required-mark" aria-hidden="true">*</span>
+          </label>
+          <div class="money-input-wrapper">
+            <span class="money-prefix" aria-hidden="true">$</span>
+            <input
+              type="number"
+              id="input-monto"
+              class="field-input field-input--money"
+              placeholder="0"
+              min="1"
+              step="1"
+              inputmode="numeric"
+              required
+            />
+          </div>
+          <span class="field-error" id="error-monto"></span>
+        </div>
+
+        <!-- Atajos de montos rápidos -->
+        <div class="quick-amounts">
+          <p class="quick-label">Montos rápidos</p>
+          <div class="quick-grid">
+            <button type="button" class="quick-btn" data-amount="2500">$2.500</button>
+            <button type="button" class="quick-btn" data-amount="5000">$5.000</button>
+            <button type="button" class="quick-btn" data-amount="10000">$10.000</button>
+            <button type="button" class="quick-btn" id="btn-todo" data-amount="all">Todo</button>
+          </div>
+        </div>
+
+        <!-- Descripción opcional -->
+        <div class="field-group">
+          <label class="field-label" for="input-descripcion">
+            <span class="material-symbols-outlined">notes</span>
+            Descripción
+            <span class="field-optional">(opcional)</span>
+          </label>
+          <textarea
+            id="input-descripcion"
+            class="field-input field-textarea"
+            placeholder="Detalles adicionales…"
+            maxlength="300"
+            rows="3"
+          ></textarea>
+        </div>
+
+        <!-- Imagen opcional -->
+        <div class="field-group">
+          <label class="field-label" for="input-imagen">
+            <span class="material-symbols-outlined">photo_camera</span>
+            Imagen
+            <span class="field-optional">(opcional)</span>
+          </label>
+
+          <div class="image-upload-zone" id="image-upload-zone">
+            <input
+              type="file"
+              id="input-imagen"
+              accept="image/*"
+              capture="environment"
+              class="file-input-hidden"
+              aria-describedby="image-hint"
+            />
+            <!-- Input alternativo: sin "capture", abre el selector de galería/archivos.
+                 Sirve de respaldo cuando la cámara falla por falta de espacio. -->
+            <input
+              type="file"
+              id="input-imagen-galeria"
+              accept="image/*"
+              class="file-input-hidden"
+              tabindex="-1"
+            />
+            <div class="upload-placeholder" id="upload-placeholder">
+              <span class="material-symbols-outlined upload-icon">add_photo_alternate</span>
+              <p class="upload-text">Tocá para adjuntar una foto</p>
+              <p class="upload-hint" id="image-hint">Cámara o galería · máx. 700KB</p>
+              <button type="button" class="link-btn" id="btn-elegir-galeria">
+                ¿Falla la cámara? Elegir desde galería
+              </button>
+            </div>
+            <div class="upload-preview" id="upload-preview" hidden>
+              <img id="preview-img" src="" alt="Vista previa de la imagen adjunta" class="preview-img" />
+              <button type="button" class="remove-img-btn" id="remove-img-btn" aria-label="Quitar imagen">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn--primary btn--full btn--lg" id="btn-submit">
+          <span class="material-symbols-outlined">arrow_downward</span>
+          Confirmar pago
+        </button>
+
+      </form>
+    </main>
+
+  </div>
+
+  <div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+  <script src="js/perfil-retiro.js"></script>
+
+</body>
+</html>

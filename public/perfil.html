@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <title>Perfil — MeDebe</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <canvas id="particles-canvas" aria-hidden="true"></canvas>
+
+  <div class="app-shell">
+
+    <header class="app-header app-header--sub">
+      <button class="btn-back"
+              onclick="window.location.href='perfiles.html'"
+              aria-label="Volver a perfiles">
+        <span class="material-symbols-outlined">arrow_back_ios</span>
+      </button>
+      <div class="header-titles">
+        <h1 class="app-title app-title--sm" id="perfil-nombre-header">Perfil</h1>
+        <p class="app-subtitle" id="perfil-estado-header">—</p>
+      </div>
+      <span class="material-symbols-outlined header-icon-right">person</span>
+    </header>
+
+    <main class="main-content">
+      <section class="balance-card" id="balance-card">
+        <div class="card-glow" aria-hidden="true"></div>
+
+        <p class="balance-label">
+          <span class="material-symbols-outlined label-icon">account_balance_wallet</span>
+          Saldo del perfil
+        </p>
+
+        <div class="balance-amount-wrapper">
+          <span class="currency-prefix">$</span>
+          <span class="balance-amount" id="perfil-balance-amount">0</span>
+          <span class="currency-suffix">ARS</span>
+        </div>
+
+        <div class="card-divider" aria-hidden="true"></div>
+
+        <div class="balance-stats">
+          <div class="stat-item">
+            <span class="material-symbols-outlined stat-icon">trending_up</span>
+            <div class="stat-data">
+              <span class="stat-value" id="perfil-stat-cargos">$0</span>
+              <span class="stat-label">Total adeudado</span>
+            </div>
+          </div>
+          <div class="stat-separator" aria-hidden="true"></div>
+          <div class="stat-item">
+            <span class="material-symbols-outlined stat-icon">trending_down</span>
+            <div class="stat-data">
+              <span class="stat-value" id="perfil-stat-pagos">$0</span>
+              <span class="stat-label">Total pagado</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="action-footer">
+      <button class="btn btn--full btn--ghost" id="btn-historial-perfil"
+              onclick="window.location.href='perfil-historial.html' + window.location.search">
+        <span class="material-symbols-outlined">history</span>
+        Historial del perfil
+      </button>
+
+      <div class="btn-row">
+        <button class="btn btn--primary" id="btn-pago"
+                onclick="window.location.href='perfil-retiro.html' + window.location.search">
+          <span class="material-symbols-outlined">arrow_downward</span>
+          Registrar pago
+        </button>
+        <button class="btn btn--accent" id="btn-cargo"
+                onclick="window.location.href='perfil-ingreso.html' + window.location.search">
+          <span class="material-symbols-outlined">arrow_upward</span>
+          Añadir deuda
+        </button>
+      </div>
+    </footer>
+
+  </div>
+
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="loading-spinner" aria-label="Cargando…">
+      <div class="spinner-ring"></div>
+    </div>
+    <p class="loading-text">Cargando datos…</p>
+  </div>
+
+  <div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+  <script src="js/perfil-detalle.js"></script>
+
+</body>
+</html>

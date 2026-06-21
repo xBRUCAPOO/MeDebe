@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Viewport optimizado para móvil -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <title>MeDebe</title>
+
+  <!-- Google Fonts: Space Grotesk (display), Inter (cuerpo), Material Symbols (íconos) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0&display=swap" rel="stylesheet" />
+
+  <!-- CSS externo — único archivo de estilos del proyecto -->
+  <link rel="stylesheet" href="css/styles.css" />
+  
+  <link rel="icon" type="image/png" href="https://i.postimg.cc/mZK9XwJH/imagen-2026-06-10-122646745.png">
+
+</head>
+<body>
+
+  <!-- Canvas de partículas animadas de fondo -->
+  <canvas id="particles-canvas" aria-hidden="true"></canvas>
+
+  <!-- Contenedor raíz de la app -->
+  <div class="app-shell">
+
+    <!-- Header con nombre y logo -->
+    <header class="app-header">
+      <div class="header-logo">
+        <!-- Logo de la app (64x64). Reemplazar public/img/logo.png por el logo definitivo -->
+        <img src="img/logo.png" alt="Logo MeDebe" class="logo-img" />
+      </div>
+      <div class="header-titles">
+        <!-- Nombre de la app cambiado de "Recompensas" a "MeDebe" -->
+        <h1 class="app-title">MeDebe</h1>
+        <p class="app-subtitle">gestor de deudas</p>
+      </div>
+      <!-- Indicador visual de conexión con la API -->
+      <span class="material-symbols-outlined status-dot" id="status-dot" title="Estado de la conexión">data_exploration</span>
+    </header>
+
+    <!-- Botón de acceso a Perfiles -->
+    <div class="perfiles-entry-wrapper">
+      <button class="btn-perfiles-entry" id="btn-perfiles-entry" onclick="window.location.href='perfiles.html'">
+        <span class="material-symbols-outlined btn-perfiles-entry-icon">group</span>
+        <span class="btn-perfiles-entry-text">Perfiles</span>
+        <span class="material-symbols-outlined btn-perfiles-entry-arrow">chevron_right</span>
+      </button>
+    </div>
+
+    <!-- Tarjeta principal: saldo total adeudado -->
+    <main class="main-content">
+      <section class="balance-card" id="balance-card">
+
+        <!-- Efecto de brillo superior de la tarjeta -->
+        <div class="card-glow" aria-hidden="true"></div>
+
+        <!-- Etiqueta descriptiva -->
+        <p class="balance-label">
+          <span class="material-symbols-outlined label-icon">account_balance_wallet</span>
+          Saldo adeudado
+        </p>
+
+        <!-- Monto principal — elemento más prominente de la pantalla -->
+        <div class="balance-amount-wrapper">
+          <span class="currency-prefix">$</span>
+          <span class="balance-amount" id="balance-amount">0</span>
+          <span class="currency-suffix">ARS</span>
+        </div>
+
+        <!-- Línea divisoria decorativa -->
+        <div class="card-divider" aria-hidden="true"></div>
+
+        <!-- Estadísticas rápidas: total ganado y total retirado -->
+        <div class="balance-stats">
+          <div class="stat-item">
+            <span class="material-symbols-outlined stat-icon">trending_up</span>
+            <div class="stat-data">
+              <span class="stat-value" id="stat-ingresos">$0</span>
+              <span class="stat-label">Total ganado</span>
+            </div>
+          </div>
+          <div class="stat-separator" aria-hidden="true"></div>
+          <div class="stat-item">
+            <span class="material-symbols-outlined stat-icon">trending_down</span>
+            <div class="stat-data">
+              <span class="stat-value" id="stat-retiros">$0</span>
+              <span class="stat-label">Total retirado</span>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Texto motivacional dinámico -->
+      <p class="motivational-text" id="motivational-text"></p>
+
+      <!-- Escala de recompensas como referencia visual -->
+      <section class="rewards-scale">
+        <p class="scale-title">Escala MeDebe</p>
+        <div class="scale-grid">
+          <div class="scale-item">
+            <span class="scale-grade">8 – 9</span>
+            <span class="scale-amount">$2.500</span>
+          </div>
+          <div class="scale-separator" aria-hidden="true"></div>
+          <div class="scale-item scale-item--gold">
+            <span class="scale-grade">10</span>
+            <span class="scale-amount">$10.000</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Botones de acción: historial, retirar, ingresar -->
+    <footer class="action-footer">
+
+      <!-- Botón historial — ancho completo, href a public/historial.html -->
+      <button class="btn btn--full btn--ghost" id="btn-historial"
+              onclick="window.location.href='historial.html'">
+        <span class="material-symbols-outlined">history</span>
+        Historial de movimientos
+      </button>
+
+      <!-- Fila de dos botones: retirar e ingresar -->
+      <div class="btn-row">
+        <!-- href a public/retiro.html -->
+        <button class="btn btn--primary" id="btn-retirar"
+                onclick="window.location.href='retiro.html'">
+          <span class="material-symbols-outlined">arrow_downward</span>
+          Retirar
+        </button>
+        <!-- href a public/ingreso.html -->
+        <button class="btn btn--accent" id="btn-ingresar"
+                onclick="window.location.href='ingreso.html'">
+          <span class="material-symbols-outlined">arrow_upward</span>
+          Ingresar
+        </button>
+      </div>
+    </footer>
+
+  </div><!-- /app-shell -->
+
+  <!-- Overlay de carga inicial -->
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="loading-spinner" aria-label="Cargando…">
+      <div class="spinner-ring"></div>
+    </div>
+    <p class="loading-text">Cargando datos…</p>
+  </div>
+
+  <!-- Toast de notificaciones flotantes -->
+  <div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+  <!-- JS principal: carga saldo, estadísticas y partículas -->
+  <!-- Ruta relativa a public/js/ porque index.html está en la raíz -->
+  <script src="js/main.js"></script>
+
+</body>
+</html>

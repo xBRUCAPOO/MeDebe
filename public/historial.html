@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <!-- Título actualizado: MeDebe en lugar de Recompensas -->
+  <title>Historial — MeDebe</title>
+
+  <!-- Google Fonts compartidos con el resto de la app -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0&display=swap" rel="stylesheet" />
+
+  <!-- CSS externo — sube un nivel desde public/ hasta la raíz -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- Canvas de partículas animadas de fondo -->
+  <canvas id="particles-canvas" aria-hidden="true"></canvas>
+
+  <div class="app-shell">
+
+    <!-- Header con botón de regreso a index.html (sube un nivel con ../) -->
+    <header class="app-header app-header--sub">
+      <button class="btn-back"
+              onclick="window.location.href='index.html'"
+              aria-label="Volver al inicio">
+        <span class="material-symbols-outlined">arrow_back_ios</span>
+      </button>
+      <div class="header-titles">
+        <h1 class="app-title app-title--sm">Historial</h1>
+        <p class="app-subtitle">Todos los movimientos</p>
+      </div>
+      <span class="material-symbols-outlined header-icon-right">history</span>
+    </header>
+
+    <!-- Barra de filtros: todos / ingresos / retiros -->
+    <div class="filter-bar">
+      <button class="filter-btn filter-btn--active" data-filter="todos" id="filter-todos">Todos</button>
+      <button class="filter-btn" data-filter="ingreso" id="filter-ingresos">
+        <span class="material-symbols-outlined">trending_up</span>Ingresos
+      </button>
+      <button class="filter-btn" data-filter="retiro" id="filter-retiros">
+        <span class="material-symbols-outlined">trending_down</span>Retiros
+      </button>
+    </div>
+
+    <!-- Contenedor de la lista de movimientos -->
+    <main class="historial-container" id="historial-container">
+
+      <!-- Estado de carga inicial -->
+      <div class="hist-loading" id="hist-loading">
+        <div class="loading-spinner">
+          <div class="spinner-ring"></div>
+        </div>
+        <p>Cargando historial…</p>
+      </div>
+
+      <!-- Estado vacío — se muestra si no hay movimientos registrados -->
+      <div class="hist-empty" id="hist-empty" hidden>
+        <span class="material-symbols-outlined hist-empty-icon">inbox</span>
+        <p class="hist-empty-title">Sin movimientos aún</p>
+        <p class="hist-empty-sub">Registrá tu primera nota para comenzar.</p>
+        <!-- href a ingreso.html que está en el mismo directorio public/ -->
+        <button class="btn btn--accent" onclick="window.location.href='ingreso.html'">
+          <span class="material-symbols-outlined">add</span>
+          Ingresar primera nota
+        </button>
+      </div>
+
+      <!-- Lista dinámica — se rellena desde historial.js -->
+      <ul class="movimientos-list" id="movimientos-list" aria-label="Lista de movimientos"></ul>
+
+    </main>
+
+  </div>
+
+  <!-- Modal de imagen ampliada al tocar una foto adjunta -->
+  <div class="img-modal-overlay" id="img-modal-overlay" hidden
+       role="dialog" aria-modal="true" aria-label="Imagen ampliada">
+    <button class="img-modal-close" id="img-modal-close" aria-label="Cerrar imagen">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+    <img class="img-modal-img" id="img-modal-img" src="" alt="Imagen de respaldo del movimiento" />
+  </div>
+
+  <!-- Toast de notificaciones -->
+  <div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+  <!-- JS del historial — mismo directorio que este HTML -->
+  <script src="js/historial.js"></script>
+
+</body>
+</html>

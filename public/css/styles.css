@@ -1,0 +1,2143 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   styles.css — Hoja de estilos principal
+   App: Sistema de Recompensas Académicas
+   Paleta: Negros profundos + verde #6ABF50 y variaciones
+   Dispositivo objetivo: Motorola G72 (393 × 873 px lógicos, AMOLED)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+
+/* ── 1. Variables CSS (Design Tokens) ──────────────────────────────────────── */
+:root {
+  /* -- Colores base: oscuro profundo para pantalla AMOLED -- */
+  --bg-void:        #000000;   /* negro puro para AMOLED (ahorro de batería)  */
+  --bg-base:        #0a0a0a;   /* fondo general de la app                      */
+  --bg-card:        #111111;   /* superficies de tarjetas                       */
+  --bg-card-hover:  #161616;   /* hover / press de tarjetas                     */
+  --bg-elevated:    #1a1a1a;   /* elementos elevados (modales, campos)          */
+  --bg-input:       #141414;   /* fondo de inputs                               */
+  --border:         #222222;   /* bordes sutiles                                */
+  --border-active:  #2e2e2e;   /* bordes en estado activo                       */
+
+  /* -- Verde principal y variaciones -- */
+  --green:          #6ABF50;   /* verde base (el branding principal)            */
+  --green-light:    #82d468;   /* variación más clara para hovers               */
+  --green-dark:     #4e9039;   /* variación más oscura para pressed             */
+  --green-dim:      #6abf5020; /* verde muy transparente para fondos sutiles    */
+  --green-glow:     #6abf5040; /* glow/aura del verde para efectos              */
+  --green-text:     #8fd978;   /* verde para texto sobre fondo oscuro           */
+
+  /* -- Dorado: nota 10 (excepción al verde, para jerarquía visual) -- */
+  --gold:           #f0c040;
+  --gold-dim:       #f0c04015;
+
+  /* -- Colores semánticos -- */
+  --danger:         #e05252;   /* rojo para retiros y errores                   */
+  --danger-dim:     #e0525218;
+  --success:        var(--green);
+  --warning:        #d4a017;
+
+  /* -- Tipografía -- */
+  --text-primary:   #f0f0f0;   /* texto principal (casi blanco, no duro)        */
+  --text-secondary: #888888;   /* texto secundario / labels                     */
+  --text-muted:     #555555;   /* texto muy silencioso                          */
+  --text-inverse:   #0a0a0a;   /* texto sobre fondo verde                       */
+
+  /* -- Fuentes -- */
+  --font-display:   'Space Grotesk', sans-serif;  /* títulos, montos, branding */
+  --font-body:      'Inter', sans-serif;           /* cuerpo, labels, UI        */
+  --font-mono:      'Space Grotesk', monospace;    /* montos numéricos          */
+
+  /* -- Espaciado base (sistema de 4px) -- */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* -- Radios de borde -- */
+  --radius-sm:  6px;
+  --radius-md:  12px;
+  --radius-lg:  18px;
+  --radius-xl:  24px;
+  --radius-pill: 999px;
+
+  /* -- Sombras y brillos -- */
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.6);
+  --shadow-btn:  0 2px 12px rgba(0,0,0,0.4);
+  --glow-green:  0 0 20px var(--green-glow), 0 0 40px var(--green-dim);
+  --glow-gold:   0 0 20px rgba(240,192,64,0.25);
+
+  /* -- Transiciones -- */
+  --ease-fast:   150ms ease;
+  --ease-normal: 250ms ease;
+  --ease-slow:   400ms ease;
+  --ease-bounce: 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* -- Tamaño de íconos de Material Symbols -- */
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+}
+
+
+/* ── 2. Reset y base global ────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent; /* elimina el flash azul en mobile */
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  /* Previene el zoom al hacer focus en inputs en iOS */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100dvh;           /* dvh: altura dinámica, respeta la barra del navegador */
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Elimina el outline nativo y reemplaza con uno accesible personalizado */
+:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Tipografía de íconos de Material Symbols */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 1.25rem;
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+
+/* ── 3. Canvas de partículas (fondo animado) ───────────────────────────────── */
+#particles-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;   /* no interfiere con los clics del usuario */
+  z-index: 0;
+  opacity: 0.45;
+}
+
+
+/* ── 4. Estructura principal de la app ────────────────────────────────────── */
+.app-shell {
+  position: relative;
+  z-index: 1;             /* sobre el canvas de partículas */
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  max-width: 430px;       /* ancho máximo para pantallas grandes */
+  margin: 0 auto;
+  padding-bottom: env(safe-area-inset-bottom, 16px); /* respeta el home indicator en iOS */
+}
+
+
+/* ── 5. Header ─────────────────────────────────────────────────────────────── */
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-5) var(--space-4);
+  /* Borde inferior con gradiente para separar sin ser agresivo */
+  border-bottom: 1px solid transparent;
+  background: linear-gradient(180deg, rgba(10,10,10,0.9) 0%, transparent 100%);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Header de sub-páginas (con botón de volver) */
+.app-header--sub {
+  background: linear-gradient(180deg, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.0) 100%);
+}
+
+.header-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--green-dim);
+  border: 1px solid var(--green-glow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  /* Animación de pulso en el logo */
+  animation: logoPulse 4s ease-in-out infinite;
+}
+
+.header-icon {
+  color: var(--green);
+  font-size: 1.25rem;
+}
+
+/* Logo de la app dentro de .header-logo (imagen 64x64 escalada a 28x28) */
+.logo-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  display: block;
+}
+
+.header-icon-right {
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  margin-left: auto;
+}
+
+@keyframes logoPulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--green-glow); }
+  50%       { box-shadow: 0 0 0 6px transparent; }
+}
+
+.header-titles {
+  flex: 1;
+}
+
+.app-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.app-title--sm {
+  font-size: 1.05rem;
+}
+
+.app-subtitle {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+
+/* Indicador de estado del servidor */
+.status-dot {
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  transition: color var(--ease-normal);
+  user-select: none;
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 1.25rem;
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+.status-dot.online  { color: var(--green); }
+.status-dot.offline { color: var(--danger); }
+/* Botón de volver (sub-páginas) */
+.btn-back {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--ease-fast), border-color var(--ease-fast), transform var(--ease-fast);
+}
+
+.btn-back:active {
+  background: var(--bg-card-hover);
+  transform: scale(0.94);
+}
+
+.btn-back .material-symbols-outlined {
+  font-size: 1.1rem;
+}
+
+
+/* ── 6. Tarjeta de saldo principal ─────────────────────────────────────────── */
+.main-content {
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.balance-card {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  overflow: hidden;
+  /* Sombra profunda para sensación de elevación */
+  box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255,255,255,0.04);
+  /* Animación de entrada desde abajo */
+  animation: slideUp 0.5s var(--ease-bounce) both;
+}
+
+/* Efecto de brillo superior — la firma visual de la app */
+.card-glow {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 100px;
+  background: radial-gradient(ellipse at center, var(--green-glow) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  /* Pulso suave del glow */
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(1); }
+  50%       { opacity: 1;   transform: translateX(-50%) scale(1.15); }
+}
+
+.balance-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: var(--space-3);
+}
+
+.label-icon {
+  color: var(--green);
+  font-size: 1rem;
+}
+
+/* Monto principal */
+.balance-amount-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  line-height: 1;
+  margin-bottom: var(--space-5);
+}
+
+.currency-prefix {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 300;
+  color: var(--green);
+  margin-top: 6px;  /* alineación óptica con el número grande */
+}
+
+.balance-amount {
+  font-family: var(--font-display);
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.04em;
+  /* Transición suave al cambiar el valor */
+  transition: color var(--ease-normal);
+}
+
+/* El monto se pone rojo si el saldo es negativo */
+.balance-amount.negative {
+  color: var(--danger);
+  text-shadow: 0 0 20px rgba(224,82,82,0.3);
+}
+
+.balance-amount-wrapper:has(.balance-amount.negative) .currency-prefix,
+.balance-amount-wrapper:has(.balance-amount.negative) .currency-suffix {
+  color: var(--danger);
+  transition: color var(--ease-normal);
+}
+
+.currency-suffix {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  align-self: flex-end;
+  margin-bottom: 8px;
+}
+
+/* Divider decorativo */
+.card-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  margin-bottom: var(--space-4);
+}
+
+/* Estadísticas en la parte inferior de la tarjeta */
+.balance-stats {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+}
+
+.stat-icon {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+}
+
+.stat-item:first-child .stat-icon { color: var(--green-text); }
+.stat-item:last-child  .stat-icon { color: var(--danger); }
+
+.stat-data {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.stat-value {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.stat-label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.stat-separator {
+  width: 1px;
+  height: 30px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+
+/* ── 7. Texto motivacional ─────────────────────────────────────────────────── */
+.motivational-text {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: center;
+  font-style: italic;
+  opacity: 0;
+  animation: fadeIn 0.6s ease 0.8s forwards;
+}
+
+
+/* ── 8. Escala de recompensas ──────────────────────────────────────────────── */
+.rewards-scale {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  animation: slideUp 0.5s var(--ease-bounce) 0.15s both;
+}
+
+.scale-title {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: var(--space-3);
+}
+
+.scale-grid {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.scale-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.scale-grade {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--green);
+}
+
+.scale-item--gold .scale-grade {
+  color: var(--gold);
+}
+
+.scale-amount {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.scale-separator {
+  width: 1px;
+  height: 28px;
+  background: var(--border);
+}
+
+
+/* ── 9. Footer de acciones principales ────────────────────────────────────── */
+.action-footer {
+  padding: var(--space-4) var(--space-5) var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  animation: slideUp 0.5s var(--ease-bounce) 0.3s both;
+  /* Línea separadora minimalista entre la escala y los botones */
+  border-top: 1px solid #2a2a2a;
+}
+
+.btn-row {
+  display: flex;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.btn-row .btn {
+  flex: 1;
+}
+
+
+/* ── 10. Sistema de botones ────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background var(--ease-fast),
+    color var(--ease-fast),
+    transform var(--ease-bounce),
+    box-shadow var(--ease-normal);
+  position: relative;
+  overflow: hidden;
+  /* Efecto de ripple al presionar */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Efecto ripple genérico */
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.06);
+  opacity: 0;
+  transition: opacity var(--ease-fast);
+  border-radius: inherit;
+}
+
+.btn:active::after  { opacity: 1; }
+.btn:active         { transform: scale(0.96); }
+
+/* Variante: ancho completo */
+.btn--full { width: 100%; }
+
+/* Variante: tamaño grande */
+.btn--lg   { padding: var(--space-5) var(--space-6); font-size: 1rem; }
+
+/* Variante: acento (verde — ingresar, confirmar) */
+.btn--accent {
+  background: var(--green);
+  color: var(--text-inverse);
+  border-color: var(--green-light);
+  box-shadow: 0 4px 20px var(--green-glow);
+}
+
+.btn--accent:hover,
+.btn--accent:focus-visible {
+  background: var(--green-light);
+  box-shadow: 0 6px 28px var(--green-glow);
+}
+
+/* Variante: primario (oscuro — retirar) */
+.btn--primary {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border-color: var(--border-active);
+}
+
+.btn--primary:hover,
+.btn--primary:focus-visible {
+  background: var(--bg-card-hover);
+  border-color: var(--border-active);
+}
+
+/* Variante: ghost (transparente — historial) */
+.btn--ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--border);
+}
+
+.btn--ghost:hover,
+.btn--ghost:focus-visible {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+/* Variante: danger (rojo — confirmar retiro con saldo negativo) */
+.btn--danger {
+  background: var(--danger);
+  color: #fff;
+  border-color: var(--danger);
+}
+
+.btn--danger:hover { background: #c94444; }
+
+/* Estado deshabilitado */
+.btn:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.btn .material-symbols-outlined {
+  font-size: 1.1rem;
+}
+
+
+/* ── 11. Pantalla de carga ─────────────────────────────────────────────────── */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-base);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-5);
+  transition: opacity var(--ease-slow), visibility var(--ease-slow);
+}
+
+.loading-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.loading-spinner {
+  position: relative;
+  width: 48px;
+  height: 48px;
+}
+
+/* Anillo giratorio del spinner */
+.spinner-ring {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  border-top-color: var(--green);
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Spinner para el historial */
+.hist-loading .loading-spinner {
+  width: 48px;
+  height: 48px;
+  position: relative;
+}
+
+.loading-text {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+
+/* ── 12. Toast de notificaciones ──────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: calc(var(--space-8) + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-active);
+  border-radius: var(--radius-pill);
+  padding: var(--space-3) var(--space-6);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--ease-normal), transform var(--ease-bounce);
+  box-shadow: var(--shadow-card);
+  max-width: calc(100vw - 40px);
+  white-space: normal;
+  text-align: center;
+}
+
+.toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.toast.success { border-color: var(--green); color: var(--green-text); }
+.toast.error   { border-color: var(--danger); color: var(--danger); }
+
+
+/* ── 13. Formularios (páginas de ingreso y retiro) ────────────────────────── */
+.form-container {
+  flex: 1;
+  padding: var(--space-5) var(--space-5) var(--space-8);
+  display: flex;
+  flex-direction: column;
+}
+
+.form-container form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* Grupo de campo */
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  animation: slideUp 0.4s var(--ease-bounce) both;
+}
+
+/* Escalonado de animaciones de campos */
+.field-group:nth-child(1) { animation-delay: 0.05s; }
+.field-group:nth-child(2) { animation-delay: 0.10s; }
+.field-group:nth-child(3) { animation-delay: 0.15s; }
+.field-group:nth-child(4) { animation-delay: 0.20s; }
+
+.field-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.field-label .material-symbols-outlined {
+  font-size: 1rem;
+  color: var(--green);
+}
+
+.required-mark {
+  color: var(--green);
+  margin-left: 2px;
+}
+
+.field-optional {
+  color: var(--text-muted);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.72rem;
+}
+
+/* Input de texto */
+.field-input {
+  width: 100%;
+  padding: var(--space-4) var(--space-4);
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 1rem;         /* >= 16px para evitar zoom en iOS */
+  font-weight: 400;
+  outline: none;
+  transition: border-color var(--ease-fast), box-shadow var(--ease-fast), background var(--ease-fast);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.field-input::placeholder {
+  color: var(--text-muted);
+}
+
+.field-input:focus {
+  border-color: var(--green);
+  background: var(--bg-elevated);
+  box-shadow: 0 0 0 3px var(--green-dim);
+}
+
+/* Input con error */
+.field-input.has-error {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px var(--danger-dim);
+}
+
+.field-error {
+  font-size: 0.75rem;
+  color: var(--danger);
+  min-height: 1rem;
+  display: block;
+  transition: opacity var(--ease-fast);
+}
+
+/* Ocultar arrows en input tipo número */
+.field-input[type="number"]::-webkit-inner-spin-button,
+.field-input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+
+/* ── 14. Selector de nota (botones 8 / 9 / 10) ────────────────────────────── */
+.nota-selector {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.nota-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-4) var(--space-2);
+  background: var(--bg-input);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition:
+    background var(--ease-fast),
+    border-color var(--ease-fast),
+    transform var(--ease-bounce),
+    box-shadow var(--ease-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.nota-btn:active {
+  transform: scale(0.94);
+}
+
+/* Estado seleccionado */
+.nota-btn[aria-pressed="true"] {
+  background: var(--green-dim);
+  border-color: var(--green);
+  box-shadow: 0 0 0 1px var(--green), var(--glow-green);
+}
+
+.nota-btn--gold[aria-pressed="true"] {
+  background: var(--gold-dim);
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px var(--gold), var(--glow-gold);
+}
+
+.nota-num {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.nota-btn[aria-pressed="true"] .nota-num { color: var(--green-text); }
+.nota-btn--gold[aria-pressed="true"] .nota-num { color: var(--gold); }
+
+.nota-reward {
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.nota-btn[aria-pressed="true"] .nota-reward { color: var(--green); }
+.nota-btn--gold[aria-pressed="true"] .nota-reward { color: var(--gold); }
+
+
+/* ── 15. Preview de recompensa (página de ingreso) ────────────────────────── */
+.reward-preview {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 var(--space-5) var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  background: var(--green-dim);
+  border: 1px solid var(--green-glow);
+  border-radius: var(--radius-lg);
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  transform: translateY(-4px);
+  transition: opacity var(--ease-normal), transform var(--ease-normal),
+              max-height var(--ease-normal), margin var(--ease-normal),
+              padding var(--ease-normal);
+  pointer-events: none;
+}
+
+.reward-preview.visible {
+  opacity: 1;
+  max-height: 80px;
+  margin-bottom: var(--space-1);
+  padding-top: var(--space-3);
+  padding-bottom: var(--space-3);
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.reward-preview-icon {
+  color: var(--green);
+  font-size: 1.4rem;
+}
+
+.reward-preview-label {
+  display: block;
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.reward-preview-amount {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--green-text);
+}
+
+
+/* ── 16. Zona de carga de imagen ───────────────────────────────────────────── */
+.image-upload-zone {
+  position: relative;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-input);
+  overflow: hidden;
+  transition: border-color var(--ease-fast), background var(--ease-fast);
+  cursor: pointer;
+  min-height: 110px;
+}
+
+.image-upload-zone:hover,
+.image-upload-zone:focus-within {
+  border-color: var(--green);
+  background: var(--green-dim);
+}
+
+.image-upload-zone.has-image {
+  cursor: default;
+  border-style: solid;
+  border-color: var(--border);
+  background: transparent;
+}
+
+.image-upload-zone.has-image:hover,
+.image-upload-zone.has-image:focus-within {
+  border-color: var(--border);
+  background: transparent;
+}
+
+/* Input oculto real de archivo */
+.file-input-hidden {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+
+/* Cuando hay imagen, deshabilitar el input para que no intercepte clics */
+.image-upload-zone.has-image .file-input-hidden {
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Ocultar el placeholder también via CSS cuando hay imagen (doble seguro) */
+.image-upload-zone.has-image .upload-placeholder {
+  display: none;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-6);
+  pointer-events: none;
+}
+
+.upload-icon {
+  font-size: 2rem;
+  color: var(--text-muted);
+}
+
+.upload-text {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.upload-hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* Botón de respaldo: "Elegir desde galería".
+   Debe quedar clickeable por encima del input file de cámara
+   (que cubre toda la zona con z-index: 2), así que sube un nivel
+   más y reactiva pointer-events (el placeholder padre los desactiva). */
+.link-btn {
+  position: relative;
+  z-index: 3;
+  pointer-events: auto;
+  background: none;
+  border: none;
+  padding: var(--space-1) var(--space-2);
+  margin-top: var(--space-1);
+  font-size: 0.72rem;
+  color: var(--green-text);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  cursor: pointer;
+  transition: text-decoration-color 0.15s ease;
+}
+
+.link-btn:hover,
+.link-btn:focus-visible {
+  text-decoration-color: var(--green-text);
+}
+
+/* Preview de la imagen */
+.upload-preview {
+  position: relative;
+}
+
+.preview-img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+}
+
+.remove-img-btn {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.7);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 3;
+  transition: background var(--ease-fast);
+}
+
+.remove-img-btn:active { background: rgba(0,0,0,0.9); }
+
+.remove-img-btn .material-symbols-outlined {
+  font-size: 1rem;
+}
+
+
+/* ── 17. Saldo disponible en página de retiro ──────────────────────────────── */
+.current-balance-display {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 var(--space-5) var(--space-1);
+  padding: var(--space-4);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  animation: slideDown 0.4s var(--ease-bounce) both;
+}
+
+.cbt-icon {
+  color: var(--green);
+  font-size: 1.5rem;
+}
+
+.cbt-label {
+  display: block;
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.cbt-amount {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cbt-amount.negative {
+  color: var(--danger);
+}
+
+/* Input de dinero con prefijo "$" */
+.money-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.money-prefix {
+  position: absolute;
+  left: var(--space-4);
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--green);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.field-input--money {
+  padding-left: calc(var(--space-4) + 16px);
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Montos rápidos */
+.quick-amounts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.quick-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+}
+
+.quick-btn {
+  padding: var(--space-3) var(--space-2);
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--ease-fast), color var(--ease-fast), border-color var(--ease-fast), transform var(--ease-fast);
+}
+
+.quick-btn:active {
+  transform: scale(0.94);
+  background: var(--green-dim);
+  border-color: var(--green);
+  color: var(--green-text);
+}
+
+
+/* ── 18. Modal de confirmación ─────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  animation: fadeIn var(--ease-fast) both;
+}
+
+.modal-overlay[hidden] {
+  display: none;
+}
+
+.modal {
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-active);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8) var(--space-6) var(--space-6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  text-align: center;
+  animation: slideUp 0.35s var(--ease-bounce) both;
+  box-shadow: 0 -4px 40px rgba(0,0,0,0.6);
+}
+
+.modal-warn-icon {
+  font-size: 2.5rem;
+  color: var(--warning);
+  animation: bounceIn 0.4s var(--ease-bounce) both;
+}
+
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.modal-body {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.modal-actions .btn {
+  flex: 1;
+}
+
+
+/* ── 19. Historial de movimientos ─────────────────────────────────────────── */
+.filter-bar {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.filter-bar::-webkit-scrollbar { display: none; }
+
+.filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--ease-fast), color var(--ease-fast), border-color var(--ease-fast);
+}
+
+.filter-btn .material-symbols-outlined { font-size: 0.95rem; }
+
+.filter-btn--active,
+.filter-btn:hover {
+  background: var(--green-dim);
+  border-color: var(--green);
+  color: var(--green-text);
+}
+
+.historial-container {
+  flex: 1;
+  padding: var(--space-3) var(--space-5) var(--space-8);
+  overflow-y: auto;
+}
+
+/* Estado vacío */
+.hist-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-12) var(--space-5);
+  text-align: center;
+  animation: fadeIn 0.4s ease both;
+}
+
+.hist-empty-icon {
+  font-size: 3rem;
+  color: var(--text-muted);
+}
+
+.hist-empty-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.hist-empty-sub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* Estado de carga del historial */
+.hist-loading[hidden],
+.hist-empty[hidden] {
+  display: none !important;
+}
+
+.hist-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-12);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+/* Lista de movimientos */
+.movimientos-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* Ítem individual de movimiento */
+.mov-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  /* Animación de entrada escalonada */
+  animation: slideUp 0.35s var(--ease-bounce) both;
+  transition: border-color var(--ease-fast);
+}
+
+.mov-item:active {
+  border-color: var(--border-active);
+}
+
+/* Borde lateral de color según tipo de movimiento */
+.mov-item--ingreso {
+  border-left: 3px solid var(--green);
+}
+
+.mov-item--retiro {
+  border-left: 3px solid var(--danger);
+}
+
+.mov-body {
+  padding: var(--space-4);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+/* Ícono del tipo */
+.mov-type-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mov-item--ingreso .mov-type-icon {
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+.mov-item--retiro .mov-type-icon {
+  background: var(--danger-dim);
+  color: var(--danger);
+}
+
+.mov-type-icon .material-symbols-outlined {
+  font-size: 1.1rem;
+}
+
+.mov-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Línea superior: materia o tipo de retiro */
+.mov-title {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Nota (solo ingresos) */
+.mov-nota {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.nota-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--green-dim);
+  color: var(--green-text);
+  border-radius: var(--radius-sm);
+  padding: 1px 6px;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.nota-badge--gold {
+  background: var(--gold-dim);
+  color: var(--gold);
+}
+
+/* Fecha */
+.mov-date {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+/* Línea de balance: saldo antes → +cambio = saldo después */
+.mov-balance-line {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.bal-before,
+.bal-after {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.bal-arrow {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.bal-change {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.bal-change--pos { color: var(--green-text); }
+.bal-change--neg { color: var(--danger); }
+
+/* Monto (alineado a la derecha) */
+.mov-amount {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  text-align: right;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.mov-item--ingreso .mov-amount { color: var(--green-text); }
+.mov-item--retiro  .mov-amount { color: var(--danger); }
+
+/* Imagen adjunta (si existe) */
+.mov-image-container {
+  border-top: 1px solid var(--border);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.mov-image {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  display: block;
+  transition: transform var(--ease-slow);
+}
+
+.mov-image:hover {
+  transform: scale(1.02);
+}
+
+
+/* ── 20. Modal de imagen ampliada ─────────────────────────────────────────── */
+.img-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.95);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+  animation: fadeIn var(--ease-fast) both;
+}
+
+.img-modal-overlay[hidden] {
+  display: none;
+}
+
+.img-modal-close {
+  position: absolute;
+  top: var(--space-5);
+  right: var(--space-5);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 301;
+}
+
+.img-modal-img {
+  max-width: 100%;
+  max-height: 80dvh;
+  border-radius: var(--radius-lg);
+  object-fit: contain;
+  animation: zoomIn 0.3s var(--ease-bounce) both;
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.85); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+
+/* ── 21. Keyframes generales ──────────────────────────────────────────────── */
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-16px); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes bounceIn {
+  0%   { transform: scale(0.5);  opacity: 0; }
+  60%  { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+/* Animación de actualización del número de saldo */
+@keyframes counterBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+.balance-amount.updating {
+  animation: counterBlink 0.5s ease 2;
+}
+
+
+/* ── 24. Botón de acceso a Perfiles (entre header y saldo) ────────────────── */
+.perfiles-entry-wrapper {
+  padding: var(--space-4) var(--space-5) 0;
+  animation: slideUp 0.45s var(--ease-bounce) both;
+}
+
+.btn-perfiles-entry {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: background var(--ease-fast), border-color var(--ease-fast), transform var(--ease-bounce);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-perfiles-entry:active {
+  transform: scale(0.97);
+  background: var(--bg-card-hover);
+}
+
+.btn-perfiles-entry:hover,
+.btn-perfiles-entry:focus-visible {
+  border-color: var(--green-glow);
+  background: var(--bg-card-hover);
+}
+
+.btn-perfiles-entry-icon {
+  color: var(--green);
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.btn-perfiles-entry-text {
+  flex: 1;
+  text-align: left;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.btn-perfiles-entry-arrow {
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+
+/* ── 25. Header de la sección Perfiles (botón volver + buscador) ─────────── */
+.perfiles-header {
+  gap: var(--space-3);
+}
+
+.perfiles-search-wrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.perfiles-search-icon {
+  position: absolute;
+  left: var(--space-3);
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  pointer-events: none;
+}
+
+.perfiles-search-input {
+  width: 100%;
+  padding: var(--space-3) var(--space-3) var(--space-3) calc(var(--space-3) + 24px);
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  transition: border-color var(--ease-fast), background var(--ease-fast);
+}
+
+.perfiles-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.perfiles-search-input:focus {
+  outline: none;
+  border-color: var(--green-glow);
+  background: var(--bg-elevated);
+}
+
+
+/* ── 26. Contenido principal de Perfiles ──────────────────────────────────── */
+.perfiles-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4) var(--space-5) calc(var(--space-8) + 70px);
+  gap: var(--space-3);
+  overflow-y: auto;
+}
+
+/* Botón hacia Control Académico */
+.btn-academico {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: background var(--ease-fast), border-color var(--ease-fast), transform var(--ease-bounce);
+  animation: slideUp 0.4s var(--ease-bounce) both;
+}
+
+.btn-academico:active {
+  transform: scale(0.97);
+}
+
+.btn-academico:hover,
+.btn-academico:focus-visible {
+  border-color: var(--green-glow);
+  background: var(--bg-card-hover);
+}
+
+.btn-academico-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--green-dim);
+  color: var(--green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.2rem;
+}
+
+.btn-academico-text {
+  flex: 1;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.btn-academico-title {
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.btn-academico-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.btn-academico-arrow {
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+/* Línea de separación reutilizada en Perfiles */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  margin: var(--space-1) 0;
+}
+
+
+/* ── 27. Tarjetas de perfil (lista de perfiles) ───────────────────────────── */
+.perfiles-list {
+  /* hereda de .movimientos-list; sólo overrides puntuales */
+}
+
+.perfil-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  animation: slideUp 0.35s var(--ease-bounce) both;
+  transition: border-color var(--ease-fast), background var(--ease-fast), transform var(--ease-fast);
+  position: relative;
+}
+
+.perfil-item:active {
+  transform: scale(0.98);
+}
+
+/* Borde lateral + tinte de fondo según estado */
+.perfil-item--medebe {
+  border-left: 3px solid var(--green);
+}
+.perfil-item--medebe.perfil-item--pressing {
+  background: var(--green-dim);
+}
+
+.perfil-item--ledebo {
+  border-left: 3px solid var(--danger);
+}
+.perfil-item--ledebo.perfil-item--pressing {
+  background: var(--danger-dim);
+}
+
+.perfil-item--neutro {
+  border-left: 3px solid var(--text-muted);
+}
+.perfil-item--neutro.perfil-item--pressing {
+  background: rgba(255,255,255,0.04);
+}
+
+.perfil-body {
+  padding: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+}
+
+.perfil-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.perfil-item--medebe .perfil-icon {
+  background: var(--green-dim);
+  color: var(--green);
+}
+.perfil-item--ledebo .perfil-icon {
+  background: var(--danger-dim);
+  color: var(--danger);
+}
+.perfil-item--neutro .perfil-icon {
+  background: rgba(255,255,255,0.06);
+  color: var(--text-muted);
+}
+
+.perfil-icon .material-symbols-outlined {
+  font-size: 1.3rem;
+}
+
+.perfil-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.perfil-nombre {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.perfil-estado-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.perfil-item--medebe .perfil-estado-label { color: var(--green-text); }
+.perfil-item--ledebo .perfil-estado-label { color: var(--danger); }
+.perfil-item--neutro .perfil-estado-label { color: var(--text-muted); }
+
+.perfil-saldo {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.perfil-item--medebe .perfil-saldo { color: var(--green-text); }
+.perfil-item--ledebo .perfil-saldo { color: var(--danger); }
+.perfil-item--neutro .perfil-saldo { color: var(--text-muted); }
+
+/* Botón de info del perfil (a la derecha del todo) */
+.perfil-info-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background var(--ease-fast), color var(--ease-fast), transform var(--ease-fast);
+}
+
+.perfil-info-btn:active {
+  transform: scale(0.9);
+}
+
+.perfil-info-btn:hover,
+.perfil-info-btn:focus-visible {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+}
+
+.perfil-info-btn .material-symbols-outlined {
+  font-size: 1.05rem;
+}
+
+/* Overlay de eliminar al mantener presionado */
+.perfil-delete-overlay-btn {
+  position: absolute;
+  inset: 0;
+  background: rgba(10,10,10,0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  color: var(--danger);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.9rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--ease-fast);
+  cursor: pointer;
+}
+
+.perfil-item--pressing .perfil-delete-overlay-btn {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.perfil-delete-overlay-btn .material-symbols-outlined {
+  font-size: 1.2rem;
+}
+
+
+/* ── 28. Botón flotante (FAB) para añadir perfil ──────────────────────────── */
+.fab-add {
+  position: fixed;
+  right: max(var(--space-5), calc(50% - 215px + var(--space-5)));
+  bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-lg);
+  background: var(--green);
+  color: var(--text-inverse);
+  border: 1px solid var(--green-light);
+  box-shadow: 0 6px 24px var(--green-glow), var(--shadow-btn);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 50;
+  transition: background var(--ease-fast), transform var(--ease-bounce), box-shadow var(--ease-normal);
+  animation: bounceIn 0.5s var(--ease-bounce) 0.2s both;
+}
+
+.fab-add:active {
+  transform: scale(0.9);
+}
+
+.fab-add:hover,
+.fab-add:focus-visible {
+  background: var(--green-light);
+  box-shadow: 0 8px 30px var(--green-glow);
+}
+
+.fab-add .material-symbols-outlined {
+  font-size: 1.6rem;
+}
+
+
+/* ── 29. Modales extendidos: info de perfil, formulario, detalle de movimiento ── */
+.modal-person-icon {
+  font-size: 2.2rem;
+  color: var(--green);
+  background: var(--green-dim);
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: bounceIn 0.4s var(--ease-bounce) both;
+}
+
+.modal-warn-icon--danger {
+  color: var(--danger);
+}
+
+.modal--form,
+.modal--info,
+.modal--detail {
+  max-height: 86dvh;
+  overflow-y: auto;
+}
+
+.modal-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  text-align: left;
+}
+
+.field-textarea {
+  resize: vertical;
+  min-height: 80px;
+  font-family: var(--font-body);
+  line-height: 1.5;
+  padding-top: var(--space-3);
+}
+
+/* Línea de balance dentro del modal de detalle de movimiento */
+.mov-detail-balance {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+.mov-detail-date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mov-detail-desc {
+  text-align: left;
+  width: 100%;
+}
+
+.mov-detail-img {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+
+/* ── 30. Items de movimiento con press-and-hold para eliminar ────────────── */
+.mov-item {
+  position: relative;
+}
+
+.mov-item-delete-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10,10,10,0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  color: var(--danger);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.9rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--ease-fast);
+  cursor: pointer;
+  z-index: 2;
+}
+
+.mov-item--pressing .mov-item-delete-overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mov-item-delete-overlay .material-symbols-outlined {
+  font-size: 1.2rem;
+}
+
+.mov-item--clickable .mov-body {
+  cursor: pointer;
+}
+
+
+/* ── 22. Respeto de preferencias del usuario (accesibilidad) ─────────────── */
+@media (prefers-reduced-motion: reduce) {
+  /* Si el usuario prefiere menos movimiento, reducimos todas las animaciones */
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
+/* ── 23. Responsive: pantallas más anchas ─────────────────────────────────── */
+@media (min-width: 500px) {
+  /* En tablets o pantallas grandes, centramos más la UI */
+  .app-shell {
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+  }
+
+  .balance-amount {
+    font-size: 4rem;
+  }
+}
