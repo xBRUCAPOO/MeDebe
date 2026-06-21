@@ -1042,31 +1042,6 @@ body {
   color: var(--text-muted);
 }
 
-/* Botón de respaldo: "Elegir desde galería".
-   Debe quedar clickeable por encima del input file de cámara
-   (que cubre toda la zona con z-index: 2), así que sube un nivel
-   más y reactiva pointer-events (el placeholder padre los desactiva). */
-.link-btn {
-  position: relative;
-  z-index: 3;
-  pointer-events: auto;
-  background: none;
-  border: none;
-  padding: var(--space-1) var(--space-2);
-  margin-top: var(--space-1);
-  font-size: 0.72rem;
-  color: var(--green-text);
-  text-decoration: underline;
-  text-decoration-color: transparent;
-  cursor: pointer;
-  transition: text-decoration-color 0.15s ease;
-}
-
-.link-btn:hover,
-.link-btn:focus-visible {
-  text-decoration-color: var(--green-text);
-}
-
 /* Preview de la imagen */
 .upload-preview {
   position: relative;

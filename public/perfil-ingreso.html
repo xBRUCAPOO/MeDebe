@@ -105,26 +105,13 @@
               type="file"
               id="input-imagen"
               accept="image/*"
-              capture="environment"
               class="file-input-hidden"
               aria-describedby="image-hint"
-            />
-            <!-- Input alternativo: sin "capture", abre el selector de galería/archivos.
-                 Sirve de respaldo cuando la cámara falla por falta de espacio. -->
-            <input
-              type="file"
-              id="input-imagen-galeria"
-              accept="image/*"
-              class="file-input-hidden"
-              tabindex="-1"
             />
             <div class="upload-placeholder" id="upload-placeholder">
               <span class="material-symbols-outlined upload-icon">add_photo_alternate</span>
               <p class="upload-text">Tocá para adjuntar una foto</p>
-              <p class="upload-hint" id="image-hint">Cámara o galería · máx. 700KB</p>
-              <button type="button" class="link-btn" id="btn-elegir-galeria">
-                ¿Falla la cámara? Elegir desde galería
-              </button>
+              <p class="upload-hint" id="image-hint">Cámara o galería · la app la comprime sola</p>
             </div>
             <div class="upload-preview" id="upload-preview" hidden>
               <img id="preview-img" src="" alt="Vista previa de la imagen adjunta" class="preview-img" />

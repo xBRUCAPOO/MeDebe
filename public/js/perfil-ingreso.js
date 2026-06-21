@@ -62,9 +62,7 @@ const errorAsunto    = document.getElementById('error-asunto');
 const errorMonto     = document.getElementById('error-monto');
 
 // Elementos de imagen
-const inputImagen        = document.getElementById('input-imagen');
-const inputImagenGaleria = document.getElementById('input-imagen-galeria');
-const btnElegirGaleria   = document.getElementById('btn-elegir-galeria');
+const inputImagen    = document.getElementById('input-imagen');
 const uploadZone     = document.getElementById('image-upload-zone');
 const uploadPH       = document.getElementById('upload-placeholder');
 const uploadPreview  = document.getElementById('upload-preview');
@@ -90,9 +88,64 @@ async function loadPerfilNombre() {
 
 /* ══════════════════════════════════════════════════════
    MANEJO DE IMAGEN
-   (Ver nota detallada sobre el error de espacio en ingreso.js)
+   (Ver nota detallada sobre compresión en ingreso.js)
    ══════════════════════════════════════════════════════ */
-function procesarArchivoImagen(file) {
+
+const MAX_DIM_PX        = 1600;
+const MAX_BASE64_BYTES  = 700 * 1024;
+const MAX_INPUT_BYTES   = 10 * 1024 * 1024;
+
+function comprimirImagen(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      let { width, height } = img;
+      if (width > MAX_DIM_PX || height > MAX_DIM_PX) {
+        if (width >= height) {
+          height = Math.round((height * MAX_DIM_PX) / width);
+          width  = MAX_DIM_PX;
+        } else {
+          width  = Math.round((width * MAX_DIM_PX) / height);
+          height = MAX_DIM_PX;
+        }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width  = width;
+      canvas.height = height;
+      const ctx2d = canvas.getContext('2d');
+      ctx2d.drawImage(img, 0, 0, width, height);
+
+      let quality = 0.85;
+      let dataUrl = canvas.toDataURL('image/jpeg', quality);
+
+      while (dataUrl.length > MAX_BASE64_BYTES && quality > 0.3) {
+        quality -= 0.1;
+        dataUrl = canvas.toDataURL('image/jpeg', quality);
+      }
+
+      if (dataUrl.length > MAX_BASE64_BYTES) {
+        reject(new Error('No se pudo comprimir la imagen lo suficiente. Probá con otra foto.'));
+        return;
+      }
+
+      resolve(dataUrl);
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('No se pudo leer la imagen seleccionada.'));
+    };
+
+    img.src = objectUrl;
+  });
+}
+
+async function procesarArchivoImagen(file) {
   if (!file) return;
 
   if (!file.type.startsWith('image/')) {
@@ -100,66 +153,38 @@ function procesarArchivoImagen(file) {
     return;
   }
 
-  if (file.size > 700 * 1024) {
-    showToast('La imagen no puede superar los 700KB', 'error');
+  if (file.size > MAX_INPUT_BYTES) {
+    showToast('La imagen no puede superar los 10MB', 'error');
     return;
   }
 
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    imagenBase64 = ev.target.result;
+  uploadPH.querySelector('.upload-text').textContent = 'Comprimiendo imagen…';
+
+  try {
+    imagenBase64 = await comprimirImagen(file);
     previewImg.src = imagenBase64;
 
     uploadPH.hidden      = true;
     uploadPreview.hidden = false;
     uploadZone.classList.add('has-image');
-  };
-  reader.onerror = () => {
-    showToast('No se pudo leer la imagen. Probá desde la galería.', 'error');
-  };
-  reader.readAsDataURL(file);
+  } catch (err) {
+    showToast(err.message || 'No se pudo procesar la imagen.', 'error');
+  } finally {
+    uploadPH.querySelector('.upload-text').textContent = 'Tocá para adjuntar una foto';
+  }
 }
 
 inputImagen.addEventListener('change', (e) => {
   procesarArchivoImagen(e.target.files[0]);
 });
 
-inputImagenGaleria.addEventListener('change', (e) => {
-  procesarArchivoImagen(e.target.files[0]);
-});
-
-btnElegirGaleria.addEventListener('click', (e) => {
-  e.stopPropagation();
-  inputImagenGaleria.click();
-});
-
-async function avisarSiPocoEspacio() {
-  if (!('storage' in navigator) || !navigator.storage.estimate) return;
-  try {
-    const { quota, usage } = await navigator.storage.estimate();
-    if (!quota) return;
-    const libreMB = (quota - usage) / (1024 * 1024);
-    if (libreMB < 50) {
-      showToast(
-        'Poco espacio libre en el dispositivo: si la cámara falla, usá "Elegir desde galería".',
-        'error',
-        5000
-      );
-    }
-  } catch {
-    // Si la API no está disponible o falla, no bloqueamos nada.
-  }
-}
-avisarSiPocoEspacio();
-
 removeImgBtn.addEventListener('click', (e) => {
   e.stopPropagation();
-  imagenBase64             = null;
-  inputImagen.value        = '';
-  inputImagenGaleria.value = '';
-  previewImg.src           = '';
-  uploadPH.hidden           = false;
-  uploadPreview.hidden      = true;
+  imagenBase64        = null;
+  inputImagen.value   = '';
+  previewImg.src      = '';
+  uploadPH.hidden      = false;
+  uploadPreview.hidden = true;
   uploadZone.classList.remove('has-image');
 });
 

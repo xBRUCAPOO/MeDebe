@@ -60,9 +60,7 @@ const btnSubmit      = document.getElementById('btn-submit');
 const toastEl        = document.getElementById('toast');
 
 // Elementos de imagen
-const inputImagen        = document.getElementById('input-imagen');
-const inputImagenGaleria = document.getElementById('input-imagen-galeria');
-const btnElegirGaleria   = document.getElementById('btn-elegir-galeria');
+const inputImagen    = document.getElementById('input-imagen');
 const uploadZone     = document.getElementById('image-upload-zone');
 const uploadPH       = document.getElementById('upload-placeholder');
 const uploadPreview  = document.getElementById('upload-preview');
@@ -116,102 +114,121 @@ notaBtns.forEach(btn => {
    MANEJO DE IMAGEN
    El input[type=file] real está oculto; al hacer clic
    en la zona de upload, lo activamos programáticamente.
-   Convertimos la imagen a base64 con FileReader para
-   guardarla directamente en D1 junto con el resto del registro.
+   Sin "capture": en Android moderno el navegador muestra
+   el selector nativo (Cámara / Fotos / Archivos).
 
-   Importante: el error "espacio insuficiente en el dispositivo"
-   lo genera el sistema operativo AL TOMAR LA FOTO (antes de que
-   este código se ejecute), porque el input con capture="environment"
-   le pide al OS que abra la cámara nativa, y esa cámara necesita
-   guardar la foto original en el almacenamiento del dispositivo
-   para poder devolverla al navegador. Eso es inevitable mientras
-   se use "capture" y es indetectable desde JS (el evento "change"
-   nunca llega a dispararse si el OS no pudo guardar la foto).
-
-   Por eso el fallback es manual: se ofrece un segundo input SIN
-   "capture" que abre el selector de galería/archivos normal, donde
-   el navegador puede trabajar con un blob temporal en memoria sin
-   necesidad de escribir una copia nueva en disco.
+   D1 tiene un límite de fila de ~1MB, y el backend rechaza
+   imágenes que en base64 superen ~900KB (ver functions/api/ingreso.js).
+   Las fotos de cámara modernas pesan 3-8MB de entrada, así que
+   ANTES de convertir a base64 redimensionamos y recomprimimos
+   la imagen en el navegador con <canvas>, iterando la calidad
+   JPEG hasta entrar bajo el límite. Esto pasa siempre, sin que
+   el usuario tenga que preocuparse por el tamaño del archivo.
    ══════════════════════════════════════════════════════ */
 
-/** Procesa un File ya elegido (sea por cámara o por galería) */
-function procesarArchivoImagen(file) {
+const MAX_DIM_PX        = 1600;        // lado mayor máximo tras redimensionar
+const MAX_BASE64_BYTES  = 700 * 1024;  // techo seguro (backend acepta hasta ~900KB)
+const MAX_INPUT_BYTES   = 10 * 1024 * 1024; // tamaño máximo aceptado del archivo original
+
+/**
+ * Redimensiona y comprime una imagen en el navegador.
+ * Devuelve una Promise<string> con el resultado en base64 (data URL).
+ */
+function comprimirImagen(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      // Calcular nuevas dimensiones manteniendo la proporción
+      let { width, height } = img;
+      if (width > MAX_DIM_PX || height > MAX_DIM_PX) {
+        if (width >= height) {
+          height = Math.round((height * MAX_DIM_PX) / width);
+          width  = MAX_DIM_PX;
+        } else {
+          width  = Math.round((width * MAX_DIM_PX) / height);
+          height = MAX_DIM_PX;
+        }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width  = width;
+      canvas.height = height;
+      const ctx2d = canvas.getContext('2d');
+      ctx2d.drawImage(img, 0, 0, width, height);
+
+      // Iterar calidad JPEG hasta entrar bajo el límite de tamaño
+      let quality = 0.85;
+      let dataUrl = canvas.toDataURL('image/jpeg', quality);
+
+      while (dataUrl.length > MAX_BASE64_BYTES && quality > 0.3) {
+        quality -= 0.1;
+        dataUrl = canvas.toDataURL('image/jpeg', quality);
+      }
+
+      if (dataUrl.length > MAX_BASE64_BYTES) {
+        reject(new Error('No se pudo comprimir la imagen lo suficiente. Probá con otra foto.'));
+        return;
+      }
+
+      resolve(dataUrl);
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('No se pudo leer la imagen seleccionada.'));
+    };
+
+    img.src = objectUrl;
+  });
+}
+
+/** Procesa el archivo elegido: valida, comprime y muestra preview */
+async function procesarArchivoImagen(file) {
   if (!file) return;
 
-  // Validar que sea una imagen
   if (!file.type.startsWith('image/')) {
     showToast('El archivo debe ser una imagen', 'error');
     return;
   }
 
-  // Validar tamaño máximo (700KB del archivo original)
-  if (file.size > 700 * 1024) {
-    showToast('La imagen no puede superar los 700KB', 'error');
+  if (file.size > MAX_INPUT_BYTES) {
+    showToast('La imagen no puede superar los 10MB', 'error');
     return;
   }
 
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    imagenBase64 = ev.target.result;
+  // Feedback visual mientras se comprime (puede tardar un instante en fotos grandes)
+  uploadPH.querySelector('.upload-text').textContent = 'Comprimiendo imagen…';
+
+  try {
+    imagenBase64 = await comprimirImagen(file);
     previewImg.src = imagenBase64;
 
-    // Ocultar placeholder y mostrar preview
     uploadPH.hidden      = true;
     uploadPreview.hidden = false;
     uploadZone.classList.add('has-image');
-  };
-  reader.onerror = () => {
-    showToast('No se pudo leer la imagen. Probá desde la galería.', 'error');
-  };
-  reader.readAsDataURL(file);
+  } catch (err) {
+    showToast(err.message || 'No se pudo procesar la imagen.', 'error');
+  } finally {
+    uploadPH.querySelector('.upload-text').textContent = 'Tocá para adjuntar una foto';
+  }
 }
 
 inputImagen.addEventListener('change', (e) => {
   procesarArchivoImagen(e.target.files[0]);
 });
 
-inputImagenGaleria.addEventListener('change', (e) => {
-  procesarArchivoImagen(e.target.files[0]);
-});
-
-/** Botón de respaldo: abre el selector de galería directamente */
-btnElegirGaleria.addEventListener('click', (e) => {
-  e.stopPropagation(); // no disparar también el input de cámara
-  inputImagenGaleria.click();
-});
-
-/* Aviso preventivo: si el espacio libre del dispositivo está muy bajo,
-   la cámara nativa probablemente va a fallar al intentar guardar la
-   foto. Lo avisamos antes de que el usuario toque la zona de cámara,
-   así sabe que puede usar el botón de galería directamente. */
-async function avisarSiPocoEspacio() {
-  if (!('storage' in navigator) || !navigator.storage.estimate) return;
-  try {
-    const { quota, usage } = await navigator.storage.estimate();
-    if (!quota) return;
-    const libreMB = (quota - usage) / (1024 * 1024);
-    if (libreMB < 50) {
-      showToast(
-        'Poco espacio libre en el dispositivo: si la cámara falla, usá "Elegir desde galería".',
-        'error',
-        5000
-      );
-    }
-  } catch {
-    // Si la API no está disponible o falla, no bloqueamos nada.
-  }
-}
-avisarSiPocoEspacio();
-
 /** Eliminar imagen seleccionada y volver al placeholder */
 removeImgBtn.addEventListener('click', (e) => {
   e.stopPropagation(); // evitar que abra el selector de archivos
-  imagenBase64          = null;
-  inputImagen.value     = '';
-  inputImagenGaleria.value = '';
-  previewImg.src        = '';
-  uploadPH.hidden        = false;
-  uploadPreview.hidden   = true;
+  imagenBase64        = null;
+  inputImagen.value   = '';
+  previewImg.src      = '';
+  uploadPH.hidden      = false;
+  uploadPreview.hidden = true;
   uploadZone.classList.remove('has-image');
 });
 
