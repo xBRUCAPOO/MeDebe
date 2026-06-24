@@ -61,12 +61,19 @@ const quickBtns       = document.querySelectorAll('.quick-btn');
 const toastEl         = document.getElementById('toast');
 
 // Elementos de imagen
-const inputImagen    = document.getElementById('input-imagen');
+const inputImagenCamara  = document.getElementById('input-imagen-camara');
+const inputImagenGaleria = document.getElementById('input-imagen-galeria');
 const uploadZone     = document.getElementById('image-upload-zone');
 const uploadPH       = document.getElementById('upload-placeholder');
 const uploadPreview  = document.getElementById('upload-preview');
 const previewImg     = document.getElementById('preview-img');
 const removeImgBtn   = document.getElementById('remove-img-btn');
+
+// Modal de selección de origen (Cámara / Galería)
+const sourceOverlay    = document.getElementById('image-source-overlay');
+const btnSourceCamara  = document.getElementById('btn-source-camara');
+const btnSourceGaleria = document.getElementById('btn-source-galeria');
+const sourceCancel     = document.getElementById('image-source-cancel');
 
 /* ── Estado interno ── */
 let saldoActual   = 0;
@@ -120,12 +127,49 @@ quickBtns.forEach(btn => {
 
 /* ══════════════════════════════════════════════════════
    MANEJO DE IMAGEN
-   (Ver nota detallada sobre compresión en ingreso.js)
+   (Ver nota detallada sobre el modal y compresión en ingreso.js)
    ══════════════════════════════════════════════════════ */
 
 const MAX_DIM_PX        = 1600;
 const MAX_BASE64_BYTES  = 700 * 1024;
 const MAX_INPUT_BYTES   = 10 * 1024 * 1024;
+
+function abrirSelectorOrigen() {
+  sourceOverlay.hidden = false;
+}
+
+function cerrarSelectorOrigen() {
+  sourceOverlay.hidden = true;
+}
+
+uploadZone.addEventListener('click', () => {
+  if (!uploadZone.classList.contains('has-image')) {
+    abrirSelectorOrigen();
+  }
+});
+
+uploadZone.addEventListener('keydown', (e) => {
+  if ((e.key === 'Enter' || e.key === ' ') && !uploadZone.classList.contains('has-image')) {
+    e.preventDefault();
+    abrirSelectorOrigen();
+  }
+});
+
+btnSourceCamara.addEventListener('click', () => {
+  cerrarSelectorOrigen();
+  inputImagenCamara.click();
+});
+
+btnSourceGaleria.addEventListener('click', () => {
+  cerrarSelectorOrigen();
+  inputImagenGaleria.click();
+});
+
+sourceCancel.addEventListener('click', () => cerrarSelectorOrigen());
+
+sourceOverlay.addEventListener('click', (e) => {
+  if (e.target === sourceOverlay) cerrarSelectorOrigen();
+});
 
 function comprimirImagen(file) {
   return new Promise((resolve, reject) => {
@@ -204,17 +248,22 @@ async function procesarArchivoImagen(file) {
   }
 }
 
-inputImagen.addEventListener('change', (e) => {
+inputImagenCamara.addEventListener('change', (e) => {
+  procesarArchivoImagen(e.target.files[0]);
+});
+
+inputImagenGaleria.addEventListener('change', (e) => {
   procesarArchivoImagen(e.target.files[0]);
 });
 
 removeImgBtn.addEventListener('click', (e) => {
   e.stopPropagation();
-  imagenBase64        = null;
-  inputImagen.value   = '';
-  previewImg.src      = '';
-  uploadPH.hidden      = false;
-  uploadPreview.hidden = true;
+  imagenBase64             = null;
+  inputImagenCamara.value  = '';
+  inputImagenGaleria.value = '';
+  previewImg.src           = '';
+  uploadPH.hidden           = false;
+  uploadPreview.hidden      = true;
   uploadZone.classList.remove('has-image');
 });
 

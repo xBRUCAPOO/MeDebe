@@ -60,12 +60,19 @@ const btnSubmit      = document.getElementById('btn-submit');
 const toastEl        = document.getElementById('toast');
 
 // Elementos de imagen
-const inputImagen    = document.getElementById('input-imagen');
+const inputImagenCamara  = document.getElementById('input-imagen-camara');
+const inputImagenGaleria = document.getElementById('input-imagen-galeria');
 const uploadZone     = document.getElementById('image-upload-zone');
 const uploadPH       = document.getElementById('upload-placeholder');
 const uploadPreview  = document.getElementById('upload-preview');
 const previewImg     = document.getElementById('preview-img');
 const removeImgBtn   = document.getElementById('remove-img-btn');
+
+// Modal de selección de origen (Cámara / Galería)
+const sourceOverlay  = document.getElementById('image-source-overlay');
+const btnSourceCamara  = document.getElementById('btn-source-camara');
+const btnSourceGaleria = document.getElementById('btn-source-galeria');
+const sourceCancel     = document.getElementById('image-source-cancel');
 
 // Error spans
 const errorMateria   = document.getElementById('error-materia');
@@ -112,10 +119,11 @@ notaBtns.forEach(btn => {
 
 /* ══════════════════════════════════════════════════════
    MANEJO DE IMAGEN
-   El input[type=file] real está oculto; al hacer clic
-   en la zona de upload, lo activamos programáticamente.
-   Sin "capture": en Android moderno el navegador muestra
-   el selector nativo (Cámara / Fotos / Archivos).
+   Al tocar la zona de upload se abre un modal propio que le
+   pregunta al usuario si quiere usar la Cámara o la Galería,
+   en vez de depender del selector nativo del sistema (que varía
+   de comportamiento según el dispositivo/Android). Cada opción
+   dispara su propio input[type=file] oculto.
 
    D1 tiene un límite de fila de ~1MB, y el backend rechaza
    imágenes que en base64 superen ~900KB (ver functions/api/ingreso.js).
@@ -129,6 +137,49 @@ notaBtns.forEach(btn => {
 const MAX_DIM_PX        = 1600;        // lado mayor máximo tras redimensionar
 const MAX_BASE64_BYTES  = 700 * 1024;  // techo seguro (backend acepta hasta ~900KB)
 const MAX_INPUT_BYTES   = 10 * 1024 * 1024; // tamaño máximo aceptado del archivo original
+
+/** Abre el modal para elegir origen de la imagen */
+function abrirSelectorOrigen() {
+  sourceOverlay.hidden = false;
+}
+
+function cerrarSelectorOrigen() {
+  sourceOverlay.hidden = true;
+}
+
+// Tocar la zona de upload (cuando todavía no hay imagen) abre el modal.
+// Si ya hay una imagen cargada, el clic lo maneja remove-img-btn (con
+// su propio stopPropagation), así que no hace falta excluirlo acá.
+uploadZone.addEventListener('click', () => {
+  if (!uploadZone.classList.contains('has-image')) {
+    abrirSelectorOrigen();
+  }
+});
+
+// Soporte de teclado: la zona es role="button" para accesibilidad
+uploadZone.addEventListener('keydown', (e) => {
+  if ((e.key === 'Enter' || e.key === ' ') && !uploadZone.classList.contains('has-image')) {
+    e.preventDefault();
+    abrirSelectorOrigen();
+  }
+});
+
+btnSourceCamara.addEventListener('click', () => {
+  cerrarSelectorOrigen();
+  inputImagenCamara.click();
+});
+
+btnSourceGaleria.addEventListener('click', () => {
+  cerrarSelectorOrigen();
+  inputImagenGaleria.click();
+});
+
+sourceCancel.addEventListener('click', () => cerrarSelectorOrigen());
+
+// Cerrar el modal si se toca el fondo oscuro (fuera de la tarjeta)
+sourceOverlay.addEventListener('click', (e) => {
+  if (e.target === sourceOverlay) cerrarSelectorOrigen();
+});
 
 /**
  * Redimensiona y comprime una imagen en el navegador.
@@ -217,18 +268,23 @@ async function procesarArchivoImagen(file) {
   }
 }
 
-inputImagen.addEventListener('change', (e) => {
+inputImagenCamara.addEventListener('change', (e) => {
+  procesarArchivoImagen(e.target.files[0]);
+});
+
+inputImagenGaleria.addEventListener('change', (e) => {
   procesarArchivoImagen(e.target.files[0]);
 });
 
 /** Eliminar imagen seleccionada y volver al placeholder */
 removeImgBtn.addEventListener('click', (e) => {
-  e.stopPropagation(); // evitar que abra el selector de archivos
-  imagenBase64        = null;
-  inputImagen.value   = '';
-  previewImg.src      = '';
-  uploadPH.hidden      = false;
-  uploadPreview.hidden = true;
+  e.stopPropagation(); // evitar que vuelva a abrir el selector de origen
+  imagenBase64             = null;
+  inputImagenCamara.value  = '';
+  inputImagenGaleria.value = '';
+  previewImg.src           = '';
+  uploadPH.hidden           = false;
+  uploadPreview.hidden      = true;
   uploadZone.classList.remove('has-image');
 });
 

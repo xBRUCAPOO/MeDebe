@@ -113,19 +113,29 @@
 
         <!-- Imagen opcional -->
         <div class="field-group">
-          <label class="field-label" for="input-imagen">
+          <label class="field-label" id="image-field-label">
             <span class="material-symbols-outlined">photo_camera</span>
             Imagen
             <span class="field-optional">(opcional)</span>
           </label>
 
-          <div class="image-upload-zone" id="image-upload-zone">
+          <div class="image-upload-zone" id="image-upload-zone" role="button" tabindex="0" aria-labelledby="image-field-label" aria-describedby="image-hint">
+            <!-- Input para origen "Cámara": fuerza apertura de la cámara nativa -->
             <input
               type="file"
-              id="input-imagen"
+              id="input-imagen-camara"
+              accept="image/*"
+              capture="environment"
+              class="file-input-hidden"
+              tabindex="-1"
+            />
+            <!-- Input para origen "Galería": abre el selector de archivos/fotos -->
+            <input
+              type="file"
+              id="input-imagen-galeria"
               accept="image/*"
               class="file-input-hidden"
-              aria-describedby="image-hint"
+              tabindex="-1"
             />
             <div class="upload-placeholder" id="upload-placeholder">
               <span class="material-symbols-outlined upload-icon">add_photo_alternate</span>
@@ -137,6 +147,28 @@
               <button type="button" class="remove-img-btn" id="remove-img-btn" aria-label="Quitar imagen">
                 <span class="material-symbols-outlined">close</span>
               </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal: elegir origen de la imagen (Cámara o Galería) -->
+        <div class="modal-overlay" id="image-source-overlay" hidden>
+          <div class="modal modal--source" role="dialog" aria-modal="true" aria-labelledby="image-source-title">
+            <span class="material-symbols-outlined modal-person-icon">add_photo_alternate</span>
+            <h2 class="modal-title" id="image-source-title">Adjuntar imagen</h2>
+            <p class="modal-body">Elegí de dónde querés tomar la foto.</p>
+            <div class="modal-source-actions">
+              <button type="button" class="source-option-btn" id="btn-source-camara">
+                <span class="material-symbols-outlined">photo_camera</span>
+                Cámara
+              </button>
+              <button type="button" class="source-option-btn" id="btn-source-galeria">
+                <span class="material-symbols-outlined">photo_library</span>
+                Galería
+              </button>
+            </div>
+            <div class="modal-actions">
+              <button type="button" class="btn btn--ghost" id="image-source-cancel">Cancelar</button>
             </div>
           </div>
         </div>
