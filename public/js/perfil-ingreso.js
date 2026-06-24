@@ -124,13 +124,13 @@ uploadZone.addEventListener('keydown', (e) => {
 });
 
 btnSourceCamara.addEventListener('click', () => {
-  cerrarSelectorOrigen();
   inputImagenCamara.click();
+  cerrarSelectorOrigen();
 });
 
 btnSourceGaleria.addEventListener('click', () => {
-  cerrarSelectorOrigen();
   inputImagenGaleria.click();
+  cerrarSelectorOrigen();
 });
 
 sourceCancel.addEventListener('click', () => cerrarSelectorOrigen());
