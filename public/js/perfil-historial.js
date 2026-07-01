@@ -76,9 +76,11 @@ const deleteCancel   = document.getElementById('mov-delete-cancel');
 const deleteConfirm  = document.getElementById('mov-delete-confirm');
 
 /* ── Estado interno ── */
-let allMovimientos = [];
-let filtroActivo   = 'todos';
-let movAEliminar   = null;
+let allMovimientos  = [];
+let filtroActivo    = 'todos';
+let movAEliminar    = null;
+let saldoAntesMap   = new Map();
+let saldoDespuesMap = new Map();
 
 /* ══════════════════════════════════════════════════════
    FORMATEO
@@ -107,34 +109,42 @@ function escapeHtml(str) {
 
 /* ══════════════════════════════════════════════════════
    CÁLCULO DE SALDOS ACUMULADOS
+   Los movimientos vienen ordenados DESC (más nuevo primero).
+   Se ancla el cálculo al saldo REAL actual del perfil (dato de
+   verdad que viene del backend) y se retrocede movimiento por
+   movimiento, así "antes" y "después" siempre son correctos sin
+   importar el filtro activo.
    ══════════════════════════════════════════════════════ */
-function calcularSaldos(movimientos) {
-  const cronologico = [...movimientos].reverse();
-  const saldoAntes = new Map();
+function calcularSaldos(movimientosDesc, saldoActual) {
+  const saldoAntes   = new Map();
   const saldoDespues = new Map();
 
-  let acumulado = 0;
-  cronologico.forEach(mov => {
-    saldoAntes.set(mov.id, acumulado);
-    if (mov.tipo === 'cargo') acumulado += mov.monto;
-    else acumulado -= mov.monto;
+  let acumulado = saldoActual;
+  movimientosDesc.forEach(mov => {
     saldoDespues.set(mov.id, acumulado);
+    const antes = mov.tipo === 'cargo' ? acumulado - mov.monto : acumulado + mov.monto;
+    saldoAntes.set(mov.id, antes);
+    acumulado = antes;
   });
 
   return { saldoAntes, saldoDespues };
 }
 
 /* ══════════════════════════════════════════════════════
-   CARGAR NOMBRE DEL PERFIL
+   CARGAR NOMBRE Y SALDO DEL PERFIL
    ══════════════════════════════════════════════════════ */
+let saldoPerfilActual = 0;
+
 async function loadPerfilNombre() {
   try {
     const res = await fetch(`/api/perfiles/${perfilId}`);
     if (!res.ok) throw new Error();
     const perfil = await res.json();
     nombreSubEl.textContent = perfil.nombre;
+    saldoPerfilActual = perfil.saldo ?? 0;
   } catch {
     nombreSubEl.textContent = 'Movimientos del perfil';
+    saldoPerfilActual = 0;
   }
 }
 
@@ -281,10 +291,11 @@ function renderLista() {
     emptyEl.hidden = true;
     listEl.hidden  = false;
 
-    const { saldoAntes, saldoDespues } = calcularSaldos(filtrados);
-
+    // Los saldos se calculan una sola vez sobre TODOS los movimientos
+    // (saldoAntesMap / saldoDespuesMap), el filtro solo cambia qué se
+    // muestra, nunca los números de saldo antes/después.
     filtrados.forEach((mov, i) => {
-      const liEl = renderMovimiento(mov, i, saldoAntes, saldoDespues);
+      const liEl = renderMovimiento(mov, i, saldoAntesMap, saldoDespuesMap);
       listEl.appendChild(liEl);
     });
   }
@@ -425,6 +436,11 @@ async function loadHistorial() {
     if (!res.ok) throw new Error('Error al cargar el historial');
 
     allMovimientos = await res.json();
+
+    const { saldoAntes, saldoDespues } = calcularSaldos(allMovimientos, saldoPerfilActual);
+    saldoAntesMap   = saldoAntes;
+    saldoDespuesMap = saldoDespues;
+
     loadingEl.hidden = true;
     renderLista();
 
@@ -449,5 +465,6 @@ window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 initParticles();
 animateParticles();
-loadPerfilNombre();
-loadHistorial();
+// Se carga primero el saldo real del perfil y recién después el
+// historial, porque el cálculo de saldos antes/después depende de él.
+loadPerfilNombre().then(loadHistorial);
