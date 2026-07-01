@@ -42,6 +42,7 @@ function animateParticles() {
 }
 
 /* ── Referencias al DOM ── */
+const balanceAmountEl = document.getElementById('balance-amount');
 const listEl         = document.getElementById('movimientos-list');
 const emptyEl        = document.getElementById('hist-empty');
 const loadingEl      = document.getElementById('hist-loading');
@@ -135,8 +136,8 @@ function renderMovimiento(mov, index, saldoAntes, saldoDespues) {
 
   // Línea de balance: antes | +cambio | = después
   const cambioStr = esIngreso
-    ? `<span class="bal-change bal-change--pos">+$${mov.monto.toLocaleString('es-AR')}</span>`
-    : `<span class="bal-change bal-change--neg">−$${mov.monto.toLocaleString('es-AR')}</span>`;
+    ? `<span class="bal-change bal-change--pos">+$${balanceAmountEl.toLocaleString('es-AR')}</span>`
+    : `<span class="bal-change bal-change--neg">−$${balanceAmountEl.toLocaleString('es-AR')}</span>`;
 
   const balanceLine = `
     <div class="mov-balance-line">
