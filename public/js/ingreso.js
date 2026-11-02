@@ -46,8 +46,9 @@ function animateParticles() {
   requestAnimationFrame(animateParticles);
 }
 
-/* ── Mapa de recompensas según nota ── */
-const RECOMPENSAS = { 8: 2500, 9: 2500, 10: 10000 };
+/* ── Mapa de recompensas según nota ──
+   [CAMBIO] La nota 9 ahora vale $5.000 (antes $2.500). Debe coincidir con functions/api/ingreso.js */
+const RECOMPENSAS = { 8: 2500, 9: 5000, 10: 10000 };
 
 /* ── Referencias al DOM ── */
 const notaBtns       = document.querySelectorAll('.nota-btn');
@@ -78,9 +79,68 @@ const sourceCancel     = document.getElementById('image-source-cancel');
 const errorMateria   = document.getElementById('error-materia');
 const errorNota      = document.getElementById('error-nota');
 
+// [CAMBIO] Monto personalizado: botón toggle, contenedor del input, input y error
+const btnMontoCustom   = document.getElementById('btn-monto-custom');
+const customMontoWrap  = document.getElementById('custom-monto-wrap');
+const inputMontoCustom = document.getElementById('input-monto-custom');
+const errorMontoCustom = document.getElementById('error-monto-custom');
+
 /* Estado interno */
 let imagenBase64 = null;   // guardará la imagen en base64 para enviar al servidor
 let notaSeleccionada = null;
+let customActivo = false;  // [CAMBIO] true cuando "Monto personalizado" está seleccionado
+
+/* ══════════════════════════════════════════════════════
+   [CAMBIO] UTILIDADES DE MONTO
+   - formatearMiles: agrega puntos separadores de miles (10000 → "10.000")
+   - leerMonto: convierte el texto del input a número entero
+   - formatearInputMiles: formatea el input mientras se escribe,
+     manteniendo la posición del cursor
+   ══════════════════════════════════════════════════════ */
+function formatearMiles(num) {
+  return String(num).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+function leerMonto(texto) {
+  const digitos = String(texto).replace(/\D/g, '');
+  return digitos ? parseInt(digitos, 10) : 0;
+}
+
+function formatearInputMiles(input) {
+  // Cantidad de dígitos que hay antes del cursor (para reubicarlo después de formatear)
+  const digitosAntesCursor = input.value.slice(0, input.selectionStart ?? input.value.length).replace(/\D/g, '').length;
+
+  // Solo dígitos, sin ceros a la izquierda y con tope de 9 dígitos
+  const digitos = input.value.replace(/\D/g, '').replace(/^0+(?=\d)/, '').slice(0, 9);
+  input.value = digitos ? formatearMiles(digitos) : '';
+
+  // Reubicar el cursor tras el mismo número de dígitos
+  let pos = 0, contados = 0;
+  while (pos < input.value.length && contados < digitosAntesCursor) {
+    if (/\d/.test(input.value[pos])) contados++;
+    pos++;
+  }
+  try { input.setSelectionRange(pos, pos); } catch (_) { /* algunos teclados no lo permiten */ }
+}
+
+/* ══════════════════════════════════════════════════════
+   [CAMBIO] PREVIEW DEL MONTO
+   Muestra el monto que se va a registrar: el personalizado si esa
+   opción está activa, o el de la nota seleccionada en caso contrario.
+   ══════════════════════════════════════════════════════ */
+function actualizarPreview() {
+  const monto = customActivo
+    ? leerMonto(inputMontoCustom.value)
+    : (notaSeleccionada ? RECOMPENSAS[notaSeleccionada] : 0);
+
+  if (monto > 0) {
+    previewAmount.textContent = `$${formatearMiles(monto)} ARS`;
+    rewardPreview.classList.add('visible');
+  } else {
+    previewAmount.textContent = '—';
+    rewardPreview.classList.remove('visible');
+  }
+}
 
 /* ══════════════════════════════════════════════════════
    SELECTOR DE NOTA
@@ -106,15 +166,49 @@ notaBtns.forEach(btn => {
     // Limpiar error previo
     clearError(errorNota, document.getElementById('group-nota'));
 
-    // Actualizar preview del monto
-    const monto = RECOMPENSAS[nota];
-    previewAmount.textContent = `$${monto.toLocaleString('es-AR')} ARS`;
-    rewardPreview.classList.add('visible');
+    // Actualizar preview del monto (respeta el monto personalizado si está activo)
+    actualizarPreview();
 
     // Micro-feedback: el botón presionado hace un pequeño flash de escala
     btn.style.transform = 'scale(0.92)';
     setTimeout(() => (btn.style.transform = ''), 150);
   });
+});
+
+/* ══════════════════════════════════════════════════════
+   [CAMBIO] MONTO PERSONALIZADO
+   El botón delgado bajo las 3 notas funciona como interruptor:
+   - Activo: aparece el input para ingresar el monto debajo del botón
+     y ese monto reemplaza la recompensa estándar de la nota.
+   - Inactivo: el input se oculta y se limpia (vuelve la recompensa estándar).
+   ══════════════════════════════════════════════════════ */
+btnMontoCustom.addEventListener('click', () => {
+  customActivo = !customActivo;
+
+  btnMontoCustom.setAttribute('aria-pressed', String(customActivo));
+  btnMontoCustom.setAttribute('aria-expanded', String(customActivo));
+  customMontoWrap.hidden = !customActivo;
+
+  if (customActivo) {
+    inputMontoCustom.focus();
+  } else {
+    // Al desactivar: limpiar valor y error para que no quede nada "escondido"
+    inputMontoCustom.value = '';
+    errorMontoCustom.textContent = '';
+    inputMontoCustom.classList.remove('has-error');
+  }
+
+  actualizarPreview();
+});
+
+// Formateo con puntos de miles en vivo + preview + limpieza de error
+inputMontoCustom.addEventListener('input', () => {
+  formatearInputMiles(inputMontoCustom);
+  if (leerMonto(inputMontoCustom.value) > 0) {
+    errorMontoCustom.textContent = '';
+    inputMontoCustom.classList.remove('has-error');
+  }
+  actualizarPreview();
 });
 
 /* ══════════════════════════════════════════════════════
@@ -136,7 +230,8 @@ notaBtns.forEach(btn => {
 
 const MAX_DIM_PX        = 1600;        // lado mayor máximo tras redimensionar
 const MAX_BASE64_BYTES  = 700 * 1024;  // techo seguro (backend acepta hasta ~900KB)
-const MAX_INPUT_BYTES   = 10 * 1024 * 1024; // tamaño máximo aceptado del archivo original
+const MAX_INPUT_BYTES   = 60 * 1024 * 1024; // [CAMBIO cámara] antes 10MB: las fotos de cámara modernas lo superan; igual se comprimen en el cliente
+const MAX_DIM_STEPS     = [MAX_DIM_PX, 1280, 1024, 800]; // [CAMBIO cámara] tamaños máximos a probar si la foto no entra en el límite
 
 /** Abre el modal para elegir origen de la imagen */
 function abrirSelectorOrigen() {
@@ -182,72 +277,77 @@ sourceOverlay.addEventListener('click', (e) => {
 });
 
 /**
- * Redimensiona y comprime una imagen en el navegador.
+ * [CAMBIO cámara] Redimensiona y comprime una imagen en el navegador.
+ * Qué hace: decodifica el archivo, lo reduce y lo recomprime a JPEG hasta que
+ * el base64 entre bajo MAX_BASE64_BYTES (límite de D1). Si con 1600px no alcanza,
+ * prueba con lados más chicos (MAX_DIM_STEPS) antes de rendirse.
+ * Para qué sirve: las fotos de cámara pesan mucho y a veces no entraban en el
+ * límite, por lo que fallaban; ahora siempre se achican lo necesario.
  * Devuelve una Promise<string> con el resultado en base64 (data URL).
  */
-function comprimirImagen(file) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const objectUrl = URL.createObjectURL(file);
+async function comprimirImagen(file) {
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    // Cargar la imagen en un <img> (aplica la orientación EXIF automáticamente)
+    const img = await new Promise((resolve, reject) => {
+      const el = new Image();
+      el.onload  = () => resolve(el);
+      el.onerror = () => reject(new Error('No se pudo leer la imagen. Si es HEIC/HEIF, configurá la cámara en JPEG o elegila desde la galería.'));
+      el.src = objectUrl;
+    });
+    // decode() asegura que esté totalmente decodificada antes de dibujarla (fotos grandes)
+    if (img.decode) { try { await img.decode(); } catch (_) { /* seguimos igual */ } }
 
-    img.onload = () => {
-      URL.revokeObjectURL(objectUrl);
+    const anchoOrig = img.naturalWidth;
+    const altoOrig  = img.naturalHeight;
+    if (!anchoOrig || !altoOrig) throw new Error('No se pudo leer la imagen seleccionada.');
 
-      // Calcular nuevas dimensiones manteniendo la proporción
-      let { width, height } = img;
-      if (width > MAX_DIM_PX || height > MAX_DIM_PX) {
-        if (width >= height) {
-          height = Math.round((height * MAX_DIM_PX) / width);
-          width  = MAX_DIM_PX;
-        } else {
-          width  = Math.round((width * MAX_DIM_PX) / height);
-          height = MAX_DIM_PX;
-        }
-      }
+    // Probamos cada tamaño máximo hasta lograr que entre bajo el límite
+    for (const maxDim of MAX_DIM_STEPS) {
+      const escala = Math.min(1, maxDim / Math.max(anchoOrig, altoOrig));
+      const width  = Math.max(1, Math.round(anchoOrig * escala));
+      const height = Math.max(1, Math.round(altoOrig  * escala));
 
-      const canvas = document.createElement('canvas');
-      canvas.width  = width;
-      canvas.height = height;
-      const ctx2d = canvas.getContext('2d');
-      ctx2d.drawImage(img, 0, 0, width, height);
+      const lienzo = document.createElement('canvas');
+      lienzo.width  = width;
+      lienzo.height = height;
+      lienzo.getContext('2d').drawImage(img, 0, 0, width, height);
 
       // Iterar calidad JPEG hasta entrar bajo el límite de tamaño
       let quality = 0.85;
-      let dataUrl = canvas.toDataURL('image/jpeg', quality);
-
+      let dataUrl = lienzo.toDataURL('image/jpeg', quality);
       while (dataUrl.length > MAX_BASE64_BYTES && quality > 0.3) {
         quality -= 0.1;
-        dataUrl = canvas.toDataURL('image/jpeg', quality);
+        dataUrl = lienzo.toDataURL('image/jpeg', quality);
       }
 
-      if (dataUrl.length > MAX_BASE64_BYTES) {
-        reject(new Error('No se pudo comprimir la imagen lo suficiente. Probá con otra foto.'));
-        return;
-      }
+      lienzo.width = lienzo.height = 0; // liberar memoria del lienzo
+      if (dataUrl.length <= MAX_BASE64_BYTES) return dataUrl;
+    }
 
-      resolve(dataUrl);
-    };
+    throw new Error('No se pudo comprimir la imagen lo suficiente. Probá con otra foto.');
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
 
-    img.onerror = () => {
-      URL.revokeObjectURL(objectUrl);
-      reject(new Error('No se pudo leer la imagen seleccionada.'));
-    };
-
-    img.src = objectUrl;
-  });
+/** [CAMBIO cámara] ¿El archivo es una imagen? Algunas cámaras/Android entregan type vacío: se valida por extensión */
+function esArchivoDeImagen(file) {
+  if (file.type) return file.type.startsWith('image/');
+  return /\.(jpe?g|png|webp|gif|bmp|heic|heif|avif)$/i.test(file.name || '');
 }
 
 /** Procesa el archivo elegido: valida, comprime y muestra preview */
 async function procesarArchivoImagen(file) {
   if (!file) return;
 
-  if (!file.type.startsWith('image/')) {
+  if (!esArchivoDeImagen(file)) {
     showToast('El archivo debe ser una imagen', 'error');
     return;
   }
 
   if (file.size > MAX_INPUT_BYTES) {
-    showToast('La imagen no puede superar los 10MB', 'error');
+    showToast('La imagen es demasiado grande para procesarla', 'error');
     return;
   }
 
@@ -265,6 +365,9 @@ async function procesarArchivoImagen(file) {
     showToast(err.message || 'No se pudo procesar la imagen.', 'error');
   } finally {
     uploadPH.querySelector('.upload-text').textContent = 'Tocá para adjuntar una foto';
+    // [CAMBIO cámara] Resetear los inputs: así se puede volver a elegir/sacar una foto tras un error
+    inputImagenCamara.value  = '';
+    inputImagenGaleria.value = '';
   }
 }
 
@@ -323,6 +426,13 @@ function validateForm() {
     errorNota.textContent = '';
   }
 
+  // [CAMBIO] Validar monto personalizado (solo si la opción está activa)
+  if (customActivo && leerMonto(inputMontoCustom.value) <= 0) {
+    errorMontoCustom.textContent = 'Ingresá un monto mayor a cero.';
+    inputMontoCustom.classList.add('has-error');
+    valid = false;
+  }
+
   return valid;
 }
 
@@ -356,6 +466,8 @@ form.addEventListener('submit', async (e) => {
       nota:    parseInt(inputNota.value, 10),
       imagen:  imagenBase64 || null,
     };
+    // [CAMBIO] Si el monto personalizado está activo, se envía al backend para reemplazar la recompensa estándar
+    if (customActivo) payload.monto = leerMonto(inputMontoCustom.value);
 
     const res = await fetch('/api/ingreso', {
       method:  'POST',
@@ -370,7 +482,7 @@ form.addEventListener('submit', async (e) => {
     }
 
     // ¡Éxito! Redirigir al inicio con mensaje de confirmación
-    const monto  = data.monto.toLocaleString('es-AR');
+    const monto  = formatearMiles(data.monto); // [CAMBIO] formato con puntos de miles consistente
     const msgOk  = encodeURIComponent(`✅ ¡+$${monto} ARS registrado correctamente!`);
     window.location.href = `/?msg=${msgOk}&type=success`;
 

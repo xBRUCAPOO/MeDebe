@@ -8,6 +8,14 @@
   <title>MeDebe</title>
   <link rel="icon" type="image/png" href="img/logo.png">
 
+  <!-- [CAMBIO PWA] Manifest + metadatos para instalar la app (Android/Chrome e iOS/Safari) -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="img/icon-192.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="MeDebe">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
   <!-- Google Fonts: Space Grotesk (display), Inter (cuerpo), Material Symbols (íconos) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -101,9 +109,15 @@
       <section class="rewards-scale">
         <p class="scale-title">Escala MeDebe</p>
         <div class="scale-grid">
+          <!-- [CAMBIO] Nota 9 ahora vale $5.000, por eso 8 y 9 pasan a ser ítems separados -->
           <div class="scale-item">
-            <span class="scale-grade">8 – 9</span>
+            <span class="scale-grade">8</span>
             <span class="scale-amount">$2.500</span>
+          </div>
+          <div class="scale-separator" aria-hidden="true"></div>
+          <div class="scale-item">
+            <span class="scale-grade">9</span>
+            <span class="scale-amount">$5.000</span>
           </div>
           <div class="scale-separator" aria-hidden="true"></div>
           <div class="scale-item scale-item--gold">
@@ -139,6 +153,9 @@
           Ingresar
         </button>
       </div>
+
+      <!-- [CAMBIO] Versión y fecha de la última modificación del index.html (actualizar en cada cambio) -->
+      <p class="app-version" id="app-version">MeDebe v1.1.0 · 02/11/2026</p>
     </footer>
 
   </div><!-- /app-shell -->
@@ -157,6 +174,9 @@
   <!-- JS principal: carga saldo, estadísticas y partículas -->
   <!-- Ruta relativa a public/js/ porque index.html está en la raíz -->
   <script src="js/main.js"></script>
+
+  <!-- [CAMBIO PWA] Registra el Service Worker (instalación y caché offline) -->
+  <script src="js/pwa.js"></script>
 
 </body>
 </html>

@@ -22,7 +22,8 @@ export async function onRequestPost(context) {
     const db = context.env.medebe_db;
 
     const body = await context.request.json();
-    const { materia, nota, imagen } = body;
+    // [CAMBIO] "monto" es opcional: monto personalizado que reemplaza la recompensa de la nota
+    const { materia, nota, imagen, monto: montoPersonalizado } = body;
 
     // ── Validaciones ─────────────────────────────────────────────────────
     if (!materia || !String(materia).trim()) {
@@ -64,8 +65,21 @@ export async function onRequestPost(context) {
     }
 
     // ── Cálculo automático del monto según escala de recompensas ──────────
-    // Nota 10 → $10.000 ARS | Nota 8 o 9 → $2.500 ARS
-    const monto = notaNum === 10 ? 10000 : 2500;
+    // [CAMBIO] Escala: Nota 10 → $10.000 | Nota 9 → $5.000 (antes $2.500) | Nota 8 → $2.500
+    let monto = notaNum === 10 ? 10000 : notaNum === 9 ? 5000 : 2500;
+
+    // [CAMBIO] Monto personalizado (opcional): si el front lo envía, reemplaza la recompensa estándar.
+    // Se valida que sea un entero positivo con un tope razonable.
+    if (montoPersonalizado !== undefined && montoPersonalizado !== null) {
+      const custom = Number(montoPersonalizado);
+      if (!Number.isInteger(custom) || custom <= 0 || custom > 999999999) {
+        return Response.json(
+          { error: 'El monto personalizado debe ser un entero mayor a cero.' },
+          { status: 400, headers: corsHeaders() }
+        );
+      }
+      monto = custom;
+    }
     const fecha = new Date().toISOString();
 
     // ── Escritura atómica en D1 ─────────────────────────────────────────────

@@ -908,6 +908,68 @@ body {
 .nota-btn--gold[aria-pressed="true"] .nota-reward { color: var(--gold); }
 
 
+/* ── [CAMBIO] Versión de la app (texto discreto al pie del index.html) ───── */
+.app-version {
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+
+/* ── 14b. [CAMBIO] Botón "Monto personalizado" (bajo los 3 botones de nota) ──
+   Botón delgado y largo que ocupa todo el ancho del selector de notas.
+   Al activarse (aria-pressed="true") muestra el input del monto debajo. */
+.nota-custom-btn {
+  width: 100%;
+  margin-top: var(--space-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--bg-input);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background var(--ease-fast),
+    border-color var(--ease-fast),
+    color var(--ease-fast),
+    transform var(--ease-fast);
+}
+
+.nota-custom-btn .material-symbols-outlined {
+  font-size: 1rem;
+}
+
+.nota-custom-btn:active {
+  transform: scale(0.98);
+}
+
+.nota-custom-btn[aria-pressed="true"] {
+  background: var(--green-dim);
+  border-color: var(--green);
+  color: var(--green-text);
+}
+
+/* Contenedor del input del monto personalizado (se muestra/oculta con el atributo hidden) */
+.custom-monto-wrap {
+  margin-top: var(--space-3);
+  animation: customMontoIn 0.2s ease-out both;
+}
+
+@keyframes customMontoIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+
 /* ── 15. Preview de recompensa (página de ingreso) ────────────────────────── */
 .reward-preview {
   display: flex;

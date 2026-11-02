@@ -57,6 +57,39 @@ let saldoActual = 0;          // saldo cargado desde el servidor
 let montoARetirar = 0;        // monto que el usuario quiere retirar
 
 /* ══════════════════════════════════════════════════════
+   [CAMBIO] UTILIDADES DE MONTO CON PUNTOS DE MILES
+   - formatearMiles: 10000 → "10.000"
+   - leerMonto: "10.000" → 10000
+   - formatearInputMiles: formatea el input mientras se escribe,
+     manteniendo la posición del cursor
+   ══════════════════════════════════════════════════════ */
+function formatearMiles(num) {
+  return String(num).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+function leerMonto(texto) {
+  const digitos = String(texto).replace(/\D/g, '');
+  return digitos ? parseInt(digitos, 10) : 0;
+}
+
+function formatearInputMiles(input) {
+  // Cantidad de dígitos antes del cursor (para reubicarlo tras formatear)
+  const digitosAntesCursor = input.value.slice(0, input.selectionStart ?? input.value.length).replace(/\D/g, '').length;
+
+  // Solo dígitos, sin ceros a la izquierda y con tope de 9 dígitos
+  const digitos = input.value.replace(/\D/g, '').replace(/^0+(?=\d)/, '').slice(0, 9);
+  input.value = digitos ? formatearMiles(digitos) : '';
+
+  // Reubicar el cursor tras el mismo número de dígitos
+  let pos = 0, contados = 0;
+  while (pos < input.value.length && contados < digitosAntesCursor) {
+    if (/\d/.test(input.value[pos])) contados++;
+    pos++;
+  }
+  try { input.setSelectionRange(pos, pos); } catch (_) { /* algunos teclados no lo permiten */ }
+}
+
+/* ══════════════════════════════════════════════════════
    CARGA DEL SALDO ACTUAL
    ══════════════════════════════════════════════════════ */
 async function loadSaldo() {
@@ -83,13 +116,13 @@ quickBtns.forEach(btn => {
     if (amount === 'all') {
       // "Todo" pone el saldo actual completo (si es positivo)
       if (saldoActual > 0) {
-        inputMonto.value = Math.floor(saldoActual);
+        inputMonto.value = formatearMiles(Math.floor(saldoActual)); // [CAMBIO] con puntos de miles
       } else {
         showToast('El saldo ya es cero o negativo', 'error');
         return;
       }
     } else {
-      inputMonto.value = amount;
+      inputMonto.value = formatearMiles(amount); // [CAMBIO] con puntos de miles
     }
 
     // Limpiar error si había
@@ -106,9 +139,9 @@ quickBtns.forEach(btn => {
    VALIDACIÓN
    ══════════════════════════════════════════════════════ */
 function validateMonto() {
-  const val = parseFloat(inputMonto.value);
+  const val = leerMonto(inputMonto.value); // [CAMBIO] lee el número ignorando los puntos
 
-  if (!inputMonto.value || isNaN(val) || val <= 0) {
+  if (!inputMonto.value || val <= 0) {
     errorMonto.textContent = 'Ingresá un monto mayor a cero.';
     inputMonto.classList.add('has-error');
     return false;
@@ -120,7 +153,8 @@ function validateMonto() {
 }
 
 inputMonto.addEventListener('input', () => {
-  if (inputMonto.value && parseFloat(inputMonto.value) > 0) {
+  formatearInputMiles(inputMonto); // [CAMBIO] puntos de miles automáticos al escribir
+  if (inputMonto.value && leerMonto(inputMonto.value) > 0) {
     errorMonto.textContent = '';
     inputMonto.classList.remove('has-error');
   }
@@ -138,7 +172,7 @@ form.addEventListener('submit', async (e) => {
 
   if (!validateMonto()) return;
 
-  montoARetirar = parseFloat(inputMonto.value);
+  montoARetirar = leerMonto(inputMonto.value); // [CAMBIO] número entero sin puntos
   const saldoResultante = saldoActual - montoARetirar;
 
   if (saldoResultante < 0) {
@@ -193,7 +227,7 @@ async function procesarRetiro() {
     if (!res.ok) throw new Error(data.error || 'Error al registrar el retiro.');
 
     // Redirigir con mensaje de éxito
-    const monto = montoARetirar.toLocaleString('es-AR');
+    const monto = formatearMiles(montoARetirar); // [CAMBIO] puntos de miles consistentes
     const msg   = encodeURIComponent(`💸 Retiro de $${monto} ARS registrado`);
     window.location.href = `/?msg=${msg}&type=success`;
 

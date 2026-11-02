@@ -82,15 +82,44 @@
               <span class="nota-num">8</span>
               <span class="nota-reward">$2.500</span>
             </button>
+            <!-- [CAMBIO] La nota 9 ahora vale $5.000 -->
             <button type="button" class="nota-btn" data-nota="9" aria-pressed="false">
               <span class="nota-num">9</span>
-              <span class="nota-reward">$2.500</span>
+              <span class="nota-reward">$5.000</span>
             </button>
             <button type="button" class="nota-btn nota-btn--gold" data-nota="10" aria-pressed="false">
               <span class="nota-num">10</span>
               <span class="nota-reward">$10.000</span>
             </button>
           </div>
+
+          <!-- [CAMBIO] Botón delgado y largo (ocupa el ancho de los 3 botones de nota).
+               Funciona como interruptor: al activarlo aparece el input del monto
+               justo debajo; al desactivarlo, el input se oculta. -->
+          <button type="button" class="nota-custom-btn" id="btn-monto-custom"
+                  aria-pressed="false" aria-expanded="false" aria-controls="custom-monto-wrap">
+            <span class="material-symbols-outlined">edit</span>
+            Monto personalizado
+          </button>
+
+          <!-- [CAMBIO] Input del monto personalizado: visible solo con la opción activa.
+               type="text" + inputmode numérico para poder mostrar los puntos de miles. -->
+          <div class="custom-monto-wrap" id="custom-monto-wrap" hidden>
+            <div class="money-input-wrapper">
+              <span class="money-prefix" aria-hidden="true">$</span>
+              <input
+                type="text"
+                id="input-monto-custom"
+                class="field-input field-input--money"
+                placeholder="0"
+                inputmode="numeric"
+                autocomplete="off"
+                aria-label="Monto personalizado en pesos"
+              />
+            </div>
+            <span class="field-error" id="error-monto-custom"></span>
+          </div>
+
           <!-- Input oculto que almacena la nota seleccionada para el submit -->
           <input type="hidden" id="input-nota" name="nota" required />
           <span class="field-error" id="error-nota"></span>

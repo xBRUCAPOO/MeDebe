@@ -58,14 +58,15 @@
           </label>
           <div class="money-input-wrapper">
             <span class="money-prefix" aria-hidden="true">$</span>
+            <!-- [CAMBIO] type="text" (antes "number") para poder mostrar puntos separadores
+                 de miles mientras se escribe (10000 → 10.000). El teclado sigue siendo numérico. -->
             <input
-              type="number"
+              type="text"
               id="input-monto"
               class="field-input field-input--money"
               placeholder="0"
-              min="1"
-              step="1"
               inputmode="numeric"
+              autocomplete="off"
               required
             />
           </div>
