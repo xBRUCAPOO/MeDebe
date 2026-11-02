@@ -259,9 +259,21 @@ uploadZone.addEventListener('keydown', (e) => {
   }
 });
 
-btnSourceCamara.addEventListener('click', () => {
-  inputImagenCamara.click();
+// [CAMBIO cámara] Ahora usa la cámara integrada (js/camara.js) en vez de <input capture>,
+// que abría la app de cámara del sistema y causaba "memoria insuficiente" en Android.
+// Si el navegador no la soporta, cae al método anterior (input capture) como respaldo.
+btnSourceCamara.addEventListener('click', async () => {
   cerrarSelectorOrigen();
+  try {
+    const foto = await MeDebeCamara.abrir();   // File JPEG liviano, o null si se cancela
+    if (foto) procesarArchivoImagen(foto);
+  } catch (err) {
+    if (err && err.name === 'NotAllowedError') {
+      showToast('Permití el acceso a la cámara para sacar la foto', 'error');
+    } else {
+      inputImagenCamara.click();               // respaldo: método anterior
+    }
+  }
 });
 
 btnSourceGaleria.addEventListener('click', () => {

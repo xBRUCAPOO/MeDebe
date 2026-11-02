@@ -122,7 +122,10 @@ quickBtns.forEach(btn => {
         return;
       }
     } else {
-      inputMonto.value = formatearMiles(amount); // [CAMBIO] con puntos de miles
+      // [CAMBIO] Los montos rápidos ahora SUMAN al monto actual en vez de reemplazarlo
+      // (ej: tocar "$10.000" dos veces → 20.000). Tope de 9 dígitos, igual que el input.
+      const suma = leerMonto(inputMonto.value) + parseInt(amount, 10);
+      inputMonto.value = formatearMiles(Math.min(suma, 999999999));
     }
 
     // Limpiar error si había

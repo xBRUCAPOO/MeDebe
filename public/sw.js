@@ -12,7 +12,7 @@
  *
  * IMPORTANTE: al desplegar cambios, subí la versión de CACHE_VERSION para limpiar cachés viejos.
  */
-const CACHE_VERSION = 'medebe-v1.1.0';
+const CACHE_VERSION = 'medebe-v1.2.0';
 
 // Archivos que se guardan al instalar (la app queda disponible offline)
 const PRECACHE = [
@@ -20,7 +20,7 @@ const PRECACHE = [
   '/perfiles.html', '/perfil.html', '/perfil-ingreso.html', '/perfil-retiro.html', '/perfil-historial.html',
   '/css/styles.css',
   '/js/main.js', '/js/ingreso.js', '/js/retiro.js', '/js/historial.js', '/js/perfiles.js',
-  '/js/perfil-detalle.js', '/js/perfil-ingreso.js', '/js/perfil-retiro.js', '/js/perfil-historial.js', '/js/pwa.js',
+  '/js/perfil-detalle.js', '/js/perfil-ingreso.js', '/js/perfil-retiro.js', '/js/perfil-historial.js', '/js/pwa.js', '/js/camara.js',
   '/img/logo.png', '/img/logo_2.png', '/img/icon-192.png', '/img/icon-512.png',
   '/manifest.webmanifest',
 ];
